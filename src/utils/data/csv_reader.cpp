@@ -21,6 +21,8 @@ namespace utils {
             file.open(path);
 
             if (!file.is_open()) {
+                std::cerr << __PRETTY_FUNCTION__ << " : Cannot open file "
+                          << path << std::endl;
                 return nullptr;
             }
 
