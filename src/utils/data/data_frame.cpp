@@ -94,6 +94,7 @@ namespace utils {
                           << " out of bound"<< std::endl;
                 return false;
             }
+            _ncols--;
             std::string colname = _colnames[index];
             _colnames.erase(_colnames.begin() + index);
             _colnames_index.erase(colname);
