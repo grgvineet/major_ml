@@ -15,6 +15,10 @@ namespace utils {
         }
 
         void data_frame::initialise_colnames(int ncols) {
+            if (ncols < 0) {
+                std::cerr << __PRETTY_FUNCTION__ << " : Invalid number of columns" << std::endl;
+                return;
+            }
             std::vector<std::string> colnames;
             for(int i=0; i<ncols; i++) {
                 colnames.push_back("C" + std::to_string(i));
@@ -31,7 +35,9 @@ namespace utils {
         }
 
         bool data_frame::remove_row(int index) {
-            if (index >= get_size()) {
+            if (index < 0 || index >= get_size()) {
+                std::cerr << __PRETTY_FUNCTION__ << " : Index " << index
+                          << " out of bound"<< std::endl;
                 return false;
             }
             for(int i=0; i<_ncols; i++) {
@@ -42,6 +48,9 @@ namespace utils {
 
         bool data_frame::insert_row(data_row dr) {
             if (dr.get_size() != _ncols) {
+                std::cerr << __PRETTY_FUNCTION__ << " : Number of columns in data row( "
+                          << dr.get_size() << ") does not match number of columns in data frame("
+                          << _ncols  << ")"<< std::endl;
                 return false;
             }
             for(int i=0; i<_ncols; i++) {
@@ -51,6 +60,12 @@ namespace utils {
         }
 
         bool data_frame::insert_row(std::vector<double>& row) {
+            if (row.size() != _ncols) {
+                std::cerr << __PRETTY_FUNCTION__ << " : Number of columns in data row( "
+                          << row.size() << ") does not match number of columns in data frame("
+                          << _ncols << ")" << std::endl;
+                return false;
+            }
             for(int i=0; i<_ncols; i++) {
                 _data[i].push_back(row[i]);
             }
@@ -62,6 +77,9 @@ namespace utils {
 
         bool data_frame::insert_column(std::vector<double>& col, std::string colname) {
             if (get_size() != col.size()) {
+                std::cerr << __PRETTY_FUNCTION__ << " : Number of rows in data column( "
+                          << col.size() << ") does not match number of rows in data frame(" << get_size()
+                          << ")" << std::endl;
                 return false;
             }
             _colnames.push_back(colname);
@@ -71,7 +89,9 @@ namespace utils {
         }
 
         bool data_frame::remove_column(int index) {
-            if (index >= _ncols) {
+            if (index < 0 || index >= _ncols) {
+                std::cerr << __PRETTY_FUNCTION__ << " : Index " << index
+                          << " out of bound"<< std::endl;
                 return false;
             }
             std::string colname = _colnames[index];
@@ -81,12 +101,18 @@ namespace utils {
         }
 
         bool data_frame::remove_column(const std::string& colname) {
+            if (_colnames_index.find(colname) == _colnames_index.end()) {
+                std::cerr << __PRETTY_FUNCTION__ << " : Invalid column name specified("
+                          << colname << ")"<< std::endl;
+            }
             return remove_column(_colnames_index[colname]);
         }
 
         data_row data_frame::operator[](int index) {
             std::vector<double> data;
-            if (index >= get_size()) {
+            if (index < 0 || index >= get_size()) {
+                std::cerr << __PRETTY_FUNCTION__ << " : Index " << index
+                          << " out of bound"<< std::endl;
                 std::vector<std::string> empty_colnames;
                 return data_row(data, empty_colnames);
             }
@@ -98,6 +124,11 @@ namespace utils {
         }
 
         data_row data_frame::operator[](const std::string& colname) {
+            if (_colnames_index.find(colname) == _colnames_index.end()) {
+                std::cerr << __PRETTY_FUNCTION__ << " : Invalid column name specified("
+                          << colname << ")"<< std::endl;
+                return operator[](-1);
+            }
             int index = _colnames_index[colname];
             return operator[](index);
         }

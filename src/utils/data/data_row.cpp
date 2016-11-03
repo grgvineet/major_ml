@@ -4,6 +4,8 @@
 
 #include "data_row.h"
 
+#include <iostream>
+
 namespace utils {
 
     namespace data {
@@ -27,12 +29,20 @@ namespace utils {
         }
 
         double data_row::get(int index) {
-            // FIXME : Check if key does not exist
+            if (index < 0 || index >= get_size()) {
+                std::cerr << __PRETTY_FUNCTION__ << " : Index " << index
+                          << " out of bound"<< std::endl;
+                return 0;
+            }
             return _data[index];
         }
 
         double data_row::get(const std::string& colname) {
-            // FIXME : Check if key does not exist
+            if (_colnames_index.find(colname) == _colnames_index.end()) {
+                std::cerr << __PRETTY_FUNCTION__ << " : Invalid column name specified("
+                          << colname << ")"<< std::endl;
+                return get(-1);
+            }
             return get(_colnames_index[colname]);
 
         }
