@@ -3,19 +3,7 @@
 set(SOURCES
         data_frame.cpp
         data_frame.h
-        data_row.cpp
-        data_row.h
-        big_data.cpp
-        big_data.h
         )
-
-set(DIRS
-        server
-        )
-
-foreach(dir ${DIRS})
-    add_subdirectory(${dir})
-endforeach()
 
 # add directory name to sources
 set(DIR_SRCS)

@@ -10,38 +10,59 @@
 
 #include "data_row.h"
 
+#include "utils/data/server/data_frame.h"
+
 namespace utils {
 
     namespace data {
 
-        class data_frame {
+        class data_frame : public hpx::components::client_base<data_frame, utils::data::server::data_frame_server>{
 
-            int _ncols;
-            std::vector<std::vector<double> > _data;
-            std::map<std::string, int> _colnames_index;
-            std::vector<std::string> _colnames;
+            typedef utils::data::data_row data_row;
 
         public:
-            explicit data_frame(int ncols);
 
-            void initialise_colnames(int ncols);
-            void initialise_colnames(std::vector<std::string>& colnames);
+            typedef hpx::components::client_base<data_frame, server::data_frame_server> base_type;
 
-            bool remove_row(int index);
-            bool insert_row(data_row dr);
-            bool insert_row(std::vector<double>& row);
+            data_frame() {}
 
-            bool insert_column(std::vector<double>& col);
-            bool insert_column(std::vector<double>& col, std::string colname);
-            bool remove_column(const int index);
-            bool remove_column(const std::string& colname);
+            // Create new component on locality 'where' and initialize the held data
+            data_frame(hpx::id_type where, int ncols)
+            : base_type(hpx::new_<server::data_frame_server>(where, ncols))
+            {}
 
-            data_row operator[](const int index); // Return row
-            data_row operator[](const std::string& colname);
+            data_frame(hpx::id_type where, std::string path, bool header)
+                    : base_type(hpx::new_<server::data_frame_server>(where, path, header))
+            {}
 
-            int get_size();
-            void print(int rows = -1);
-            void print_col_names();
+            // Create a new component on the locality co-located to the id 'where'. The
+            // new instance will be initialized from the given partition_data.
+            data_frame(hpx::id_type where, int const& ncols)
+            : base_type(hpx::new_<server::data_frame_server>(hpx::colocated(where), ncols))
+            {}
+
+            // Attach a future representing a (possibly remote) partition.
+            data_frame(hpx::future<hpx::id_type> && id)
+            : base_type(std::move(id))
+            {}
+
+            // Unwrap a future<partition> (a partition already is a future to the
+            // id of the referenced object, thus unwrapping accesses this inner future).
+            data_frame(hpx::future<data_frame> && c)
+            : base_type(std::move(c))
+            {}
+
+            hpx::future<void> print(int rows = -1) const
+            {
+                utils::data::server::data_frame_server::print_action act;
+                return hpx::async(act, get_id(), rows);
+            }
+
+            hpx::future<int> get_size() const {
+                utils::data::server::data_frame_server::get_size_action act;
+                return hpx::async(act, get_id());
+            }
+
         };
 
     }

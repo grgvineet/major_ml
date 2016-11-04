@@ -4,13 +4,20 @@
 
 #include <iostream>
 
-#include "algorithms/kmeans/kmeans.h"
+#include <hpx/hpx_init.hpp>
+#include <hpx/hpx.hpp>
 
-int main() {
-    std::cout << "Hello kmeans" << std::endl;
+#include "utils/data/big_data.h"
 
-    algo::kmeans kmeans;
-    kmeans.say_hello();
-    return 0;
+
+int hpx_main(boost::program_options::variables_map& vm)
+{
+    utils::data::big_data bg("header.csv", true);
+    std::cout << bg.get_size();
+    return hpx::finalize();
 }
 
+int main(int argc, char* argv[]) {
+    std::cout << "Hello kmeans" << std::endl;
+    return hpx::init(argc, argv);
+}

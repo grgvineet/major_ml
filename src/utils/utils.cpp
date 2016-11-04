@@ -2,6 +2,9 @@
 // Created by vineet on 2/11/16.
 //
 
+#ifndef UTILS_CPP
+#define UTILS_CPP
+
 #include <string>
 #include <sstream>
 #include <vector>
@@ -40,4 +43,6 @@ namespace utils {
         return elems;
     }
 }
+
+#endif
 
