@@ -7,6 +7,9 @@
 
 #include "utils/utils.cpp"
 
+#include <boost/iostreams/device/mapped_file.hpp>
+#include <boost/algorithm/string.hpp>
+
 namespace utils {
     
     namespace data { namespace server {
@@ -22,9 +25,12 @@ namespace utils {
         }
 
         data_frame_server::data_frame_server(std::string path, bool header) {
+
+            // Optimised way to get number of lines
+            int num_lines = get_nrows_from_file(path, header);
+
             std::ifstream file;
             file.open(path);
-
             if (!file.is_open()) {
                 std::cerr << __PRETTY_FUNCTION__ << " : Cannot open file "
                           << path << std::endl;
@@ -46,7 +52,8 @@ namespace utils {
             }
 
             _ncols = colnames.size();
-            _data = std::vector<std::vector<double> >(_ncols, std::vector<double>(0));
+            _data = std::vector<std::vector<double> >(_ncols, std::vector<double>());
+            for(int i=0; i<_ncols; i++) _data[i].reserve(num_lines);
 
             initialise_colnames(colnames);
 
@@ -215,6 +222,22 @@ namespace utils {
 
         std::vector<double> data_frame_server::get_row(int index) {
             return this->operator[](index).get_data();
+        }
+
+        int data_frame_server::get_nrows_from_file(std::string &path, bool header) {
+            // Optimised method to number of data rows from input file
+            boost::iostreams::mapped_file mmap(path, boost::iostreams::mapped_file::readonly);
+            auto f = mmap.const_data();
+            auto l = f + mmap.size();
+            int nrows = 0;
+            while(f && f!=l) {
+                if ((f = static_cast<const char*>(memchr(f, '\n', l-f)))) {
+                    nrows++; f++;
+                }
+            }
+            mmap.close();
+            if (header) nrows--;
+            return nrows;
         }
 
         }}// end namespace data

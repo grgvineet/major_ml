@@ -10,6 +10,8 @@
 algo::kmeans::kmeans::kmeans(int k) {
     _name = "kmeans";
     _k = k;
+
+    _points.reserve(k);
 }
 
 algo::kmeans::kmeans::~kmeans() {
@@ -28,6 +30,7 @@ void algo::kmeans::kmeans::train(utils::data::big_data &training_data) {
 
     // Initialise client for each node
     std::vector<kmeans_client> clients;
+    clients.reserve(training_data.get_num_data_frames());
     for(int i=0; i<training_data.get_num_data_frames(); i++) {
         clients.push_back(kmeans_client(hpx::get_colocation_id(training_data.get_data_frame(i).get_id()).get(), _k));
     }
@@ -43,6 +46,7 @@ void algo::kmeans::kmeans::train(utils::data::big_data &training_data) {
     std::cerr << "Number of points :" << _points[0].size() << std::endl;
     for(int i=1; i<_k; i++) {
         std::vector<hpx::future<std::vector<double>>> points_future;
+        points_future.reserve(clients.size());
         for(int j=0; j<clients.size(); j++) {
             points_future.push_back(clients[j].kmeanspp(training_data.get_data_frame(j), _points));
         }
@@ -75,6 +79,7 @@ void algo::kmeans::kmeans::train(utils::data::big_data &training_data) {
     while(true) {
         typedef std::vector<std::vector<double>> double2d;
         std::vector<hpx::future<double2d>> fut_points;
+        fut_points.reserve(clients.size());
         for (int i = 0; i < clients.size(); i++) {
             fut_points.push_back(clients[i].train(training_data.get_data_frame(i), _points));
         }

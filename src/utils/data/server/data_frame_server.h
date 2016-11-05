@@ -46,6 +46,8 @@ namespace utils {
             void print(int rows = -1);
             void print_col_names();
 
+            int get_nrows_from_file(std::string& path, bool header = false);
+
             ///////////////////////////////////////////////////////////////////////
             // Every member function which has to be invoked remotely needs to be
             // wrapped into a component action. The macro below defines a new type

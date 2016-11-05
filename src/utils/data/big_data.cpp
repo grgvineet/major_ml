@@ -18,6 +18,7 @@ namespace utils {
 
         void big_data::read_data(const std::string &path, const bool header) {
             std::vector<hpx::naming::id_type> localities = hpx::find_all_localities();
+            _data_frames.reserve(localities.size());
             for(int i=0; i<localities.size(); i++) {
                 _data_frames.push_back(data_frame(localities[i], path, header));
                 if (localities[i] == hpx::find_here()) {

@@ -8,6 +8,11 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <iterator>
+
+#include <boost/tokenizer.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/foreach.hpp>
 
 namespace utils {
 
@@ -18,14 +23,28 @@ namespace utils {
      */
     template <typename Type>
     std::vector<Type> split(const std::string &s) {
-        Type item;
         std::vector<Type> elems;
 
-        std::stringstream ss;
-        ss.str(s);
-        while(ss >> item) {
-            elems.push_back(item);
-            ss.ignore(1);
+        boost::char_separator<char> delimiter(",");
+        boost::tokenizer<boost::char_separator<char>> tokenizer(s, delimiter);
+        BOOST_FOREACH(std::string t, tokenizer)
+        {
+            elems.push_back(boost::lexical_cast<Type>(t));
+        }
+        return elems;
+    }
+
+    template <>
+    std::vector<double> split<double>(const std::string &s) {
+        std::vector<double> elems;
+
+        boost::char_separator<char> delimiter(",");
+        boost::tokenizer<boost::char_separator<char>> tokenizer(s, delimiter);
+        BOOST_FOREACH(std::string t, tokenizer)
+        {
+            double d;
+            std::sscanf(t.data(), "%lf", &d);
+            elems.push_back(d);
         }
         return elems;
     }

@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <cmath>
 #include "euclidean_distance.h"
 
 namespace utils {
@@ -23,14 +24,24 @@ namespace utils {
         }
 
         bool is_converged(std::vector<std::vector<double>>& a, std::vector<std::vector<double>>& b) {
+            if (a.size() == 0 || b.size() == 0) {
+                std::cerr << __PRETTY_FUNCTION__ << " : One of the matrix is empty" << std::endl;
+                return true; // Break the loop where it is called
+            }
             if (a.size() != b.size()) {
                 std::cerr << __PRETTY_FUNCTION__ << " : Dimensions of matrix a and b does not match" << std::endl;
                 return true; // Break the loop where it is called
             }
             for(int i=0; i<a.size(); i++) {
-                double dist = euclid_square(a[i], b[i]);
-                if (dist > 1e-4) {
-                    return false;
+                if (a[0].size() != b[0].size()) {
+                    std::cerr << __PRETTY_FUNCTION__ << " : Dimensions of matrix a and b does not match" << std::endl;
+                    return true; // Break the loop where it is called
+                }
+                for(int j=0; j<a[0].size(); j++) {
+                    double dist = std::fabs(a[i][j]-b[i][j]);
+                    if (dist > 1e-2) {
+                        return false;
+                    }
                 }
             }
             return true;
