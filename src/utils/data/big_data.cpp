@@ -20,6 +20,9 @@ namespace utils {
             std::vector<hpx::naming::id_type> localities = hpx::find_all_localities();
             for(int i=0; i<localities.size(); i++) {
                 _data_frames.push_back(data_frame(localities[i], path, header));
+                if (localities[i] == hpx::find_here()) {
+                    _this_data_frame_index = i;
+                }
             }
         }
 
@@ -34,6 +37,32 @@ namespace utils {
                 answer += futures[i].get();
             }
             return answer;
+        }
+
+        int big_data::get_num_data_frames() const{
+            return _data_frames.size();
+        }
+
+        data_frame& big_data::get_data_frame(int index) {
+            if (_data_frames.empty()) {
+                std::cerr << __PRETTY_FUNCTION__ << " : data frames not yet initialised" << std::endl;
+                //FIXME : Return something else
+                return _data_frames[0];
+            }
+            if (index < 0 || index >= _data_frames.size()) {
+                std::cerr << __PRETTY_FUNCTION__ << " : Index " << index << " out of bound" << std::endl;
+                return _data_frames[0];
+            }
+            return _data_frames[index];
+        }
+
+        data_frame& big_data::get_this_data_frame() {
+            if (_data_frames.empty()) {
+                std::cerr << __PRETTY_FUNCTION__ << " : data frames not yet initialised" << std::endl;
+                //FIXME : Return something else
+                return _data_frames[0];
+            }
+            return _data_frames[_this_data_frame_index];
         }
     }
 }

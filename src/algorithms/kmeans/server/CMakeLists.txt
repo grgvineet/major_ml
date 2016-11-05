@@ -1,8 +1,8 @@
 # Define the files that we need to compile.
 # Anything not in this list will not be compiled into mlpack.
 set(SOURCES
-        data_frame_server.cpp
-        data_frame_server.h
+        kmeans_server.h
+        kmeans_server.cpp
         )
 
 # add directory name to sources

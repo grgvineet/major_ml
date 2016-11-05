@@ -1,6 +1,6 @@
 set(DIRS
-        data
         math
+        data
         )
 
 foreach(dir ${DIRS})

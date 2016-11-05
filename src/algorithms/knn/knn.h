@@ -2,8 +2,8 @@
 // Created by vineet on 31/10/16.
 //
 
-#ifndef PARDIS_ML_KNN_H
-#define PARDIS_ML_KNN_H
+#ifndef ALGORITHMS_KNN_KNN_H
+#define ALGORITHMS_KNN_KNN_H
 
 #include "../algo_base.h"
 
@@ -20,4 +20,4 @@ namespace algo {
 }
 
 
-#endif //KNN_H
+#endif //ALGORITHMS_KNN_KNN_H

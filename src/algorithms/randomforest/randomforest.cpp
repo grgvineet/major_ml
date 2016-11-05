@@ -5,7 +5,7 @@
 #include "randomforest.h"
 
 algo::randomforest::randomforest() {
-    class_name = "randomforest";
+    _name = "randomforest";
 }
 
 algo::randomforest::~randomforest() {
@@ -13,5 +13,5 @@ algo::randomforest::~randomforest() {
 }
 
 void algo::randomforest::say_hello() {
-    std::cout << "Hello from " << class_name << std::endl;
+    std::cout << "Hello from " << _name << std::endl;
 }

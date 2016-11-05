@@ -2,8 +2,8 @@
 // Created by vineet on 2/11/16.
 //
 
-#ifndef DATA_ROW_H
-#define DATA_ROW_H
+#ifndef UTILS_DATA_DATA_ROW_H
+#define UTILS_DATA_DATA_ROW_H
 
 #include <vector>
 #include <string>
@@ -29,6 +29,8 @@ namespace utils {
             double get(int index);
             double get(const std::string& colname);
 
+            std::vector<double> get_data();
+
             int get_size();
         };
 
@@ -36,4 +38,4 @@ namespace utils {
 }
 
 
-#endif //DATA_ROW_H
+#endif //UTILS_DATA_DATA_ROW_H

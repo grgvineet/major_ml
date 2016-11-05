@@ -7,17 +7,18 @@
 #include <hpx/hpx_init.hpp>
 #include <hpx/hpx.hpp>
 
-#include "utils/data/big_data.h"
-
+#include "algorithms/kmeans/kmeans.h"
 
 int hpx_main(boost::program_options::variables_map& vm)
 {
-    utils::data::big_data bg("header.csv", true);
+    utils::data::big_data bg("cat_data.csv", false);
     std::cout << bg.get_size();
+    algo::kmeans::kmeans kmeans(3);
+    kmeans.train(bg);
     return hpx::finalize();
 }
 
 int main(int argc, char* argv[]) {
-    std::cout << "Hello kmeans" << std::endl;
+    algo::kmeans::kmeans::configure_args(argc, argv);
     return hpx::init(argc, argv);
 }

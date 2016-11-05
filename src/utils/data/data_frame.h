@@ -2,15 +2,15 @@
 // Created by vineet on 2/11/16.
 //
 
-#ifndef DATA_FRAME_H
-#define DATA_FRAME_H
+#ifndef UTILS_DATA_DATA_FRAME_H
+#define UTILS_DATA_DATA_FRAME_H
 
 #include <vector>
 #include <map>
 
 #include "data_row.h"
 
-#include "utils/data/server/data_frame.h"
+#include "utils/data/server/data_frame_server.h"
 
 namespace utils {
 
@@ -63,6 +63,16 @@ namespace utils {
                 return hpx::async(act, get_id());
             }
 
+            hpx::future<int> get_ncols() const {
+                utils::data::server::data_frame_server::get_ncols_action act;
+                return hpx::async(act, get_id());
+            }
+
+            hpx::future<std::vector<double>> get_row(int index) {
+                utils::data::server::data_frame_server::get_row_action act;
+                return hpx::async(act, get_id(), index);
+            }
+
         };
 
     }
@@ -70,4 +80,4 @@ namespace utils {
 
 
 
-#endif //DATA_FRAME_H
+#endif //UTILS_DATA_DATA_FRAME_H

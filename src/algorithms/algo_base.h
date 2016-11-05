@@ -2,18 +2,26 @@
 // Created by vineet on 31/10/16.
 //
 
-#ifndef PARDIS_ML_ALGO_BASE_H
-#define PARDIS_ML_ALGO_BASE_H
+#ifndef ALGORITHMS_ALGO_BASE_H
+#define ALGORITHMS_ALGO_BASE_H
 
 #include <iostream>
 
+#include <hpx/util/parse_command_line.hpp>
+
 namespace algo {
 
-    class algo_base {
+    struct algo_base {
+
     protected:
-        std::string class_name;
+        std::string _name;
+
+    public:
+
+        static boost::program_options::options_description
+        configure_args(boost::program_options::options_description &description);
     };
 }
 
 
-#endif //PARDIS_ML_ALGO_BASE_H
+#endif //ALGORITHMS_ALGO_BASE_H

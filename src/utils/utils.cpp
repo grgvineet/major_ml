@@ -2,8 +2,8 @@
 // Created by vineet on 2/11/16.
 //
 
-#ifndef UTILS_CPP
-#define UTILS_CPP
+#ifndef UTILS_UTILS_CPP
+#define UTILS_UTILS_CPP
 
 #include <string>
 #include <sstream>
@@ -44,5 +44,5 @@ namespace utils {
     }
 }
 
-#endif
+#endif // UTILS_UTILS_CPP
 

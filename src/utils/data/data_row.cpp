@@ -50,5 +50,9 @@ namespace utils {
         int data_row::get_size() {
             return _data.size();
         }
+
+        std::vector<double> data_row::get_data() {
+            return _data;
+        }
     }
 }

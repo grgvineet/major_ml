@@ -6,7 +6,7 @@
 
 
 algo::linearreg::linearreg() {
-    class_name = "linearreg";
+    _name = "linearreg";
 }
 
 algo::linearreg::~linearreg() {
@@ -14,5 +14,5 @@ algo::linearreg::~linearreg() {
 }
 
 void algo::linearreg::say_hello() {
-    std::cout << "Hello from " << class_name << std::endl;
+    std::cout << "Hello from " << _name << std::endl;
 }

@@ -2,8 +2,8 @@
 // Created by vineet on 31/10/16.
 //
 
-#ifndef RANDOMFOREST_H
-#define RANDOMFOREST_H
+#ifndef ALGORITHMS_RANDOMFOREST_RANDOMFOREST_H
+#define ALGORITHMS_RANDOMFOREST_RANDOMFOREST_H
 
 #include "../algo_base.h"
 
@@ -21,4 +21,4 @@ namespace algo {
 
 
 
-#endif //RANDOMFOREST_H
+#endif //ALGORITHMS_RANDOMFOREST_RANDOMFOREST_H

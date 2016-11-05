@@ -3,7 +3,7 @@
 //
 
 #include <iostream>
-#include "data_frame.h"
+#include "data_frame_server.h"
 
 #include "utils/utils.cpp"
 
@@ -59,7 +59,7 @@ namespace utils {
                 std::vector<double> row = utils::split<double>(data);
                 insert_row(row);
             }
-            print();
+//            print();
         }
 
         void data_frame_server::initialise_colnames(int ncols) {
@@ -182,7 +182,7 @@ namespace utils {
             return operator[](index);
         }
 
-        int data_frame_server::get_size() {
+        int data_frame_server::get_size() const{
             if (_ncols == 0) return 0;
             return _data[0].size();
         }
@@ -209,6 +209,14 @@ namespace utils {
             std::cout << std::endl;
         }
 
+        int data_frame_server::get_ncols() const {
+            return _ncols;
+        }
+
+        std::vector<double> data_frame_server::get_row(int index) {
+            return this->operator[](index).get_data();
+        }
+
         }}// end namespace data
 } // end namespace utils
 
@@ -219,9 +227,13 @@ HPX_REGISTER_COMPONENT(data_frame_server_type, data_frame_server);
 
 // HPX_REGISTER_ACTION() exposes the component member function for remote
 // invocation.
+typedef utils::data::server::data_frame_server::get_ncols_action get_ncols_action;
+HPX_REGISTER_ACTION(get_ncols_action);
 typedef utils::data::server::data_frame_server::remove_row_action remove_row_action;
 HPX_REGISTER_ACTION(remove_row_action);
 typedef utils::data::server::data_frame_server::print_action print_action;
 HPX_REGISTER_ACTION(print_action);
 typedef utils::data::server::data_frame_server::get_size_action get_size_action;
 HPX_REGISTER_ACTION(get_size_action);
+typedef utils::data::server::data_frame_server::get_row_action get_row_action;
+HPX_REGISTER_ACTION(get_row_action);

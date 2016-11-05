@@ -2,23 +2,38 @@
 // Created by vineet on 31/10/16.
 //
 
-#ifndef KMEANS_H
-#define KMEANS_H
+#ifndef ALGORITHMS_KMEANS_KMEANS_H
+#define ALGORITHMS_KMEANS_KMEANS_H
 
-#include "../algo_base.h"
+#include "algorithms/algo_base.h"
+#include "utils/data/big_data.h"
+
+#include "server/kmeans_server.h"
 
 namespace algo {
 
-    class kmeans : public algo_base {
-    public:
-        kmeans();
-        ~kmeans();
+    namespace kmeans {
+        struct kmeans : algo_base {
 
-        void say_hello();
-    };
+        private:
+            int _k; // K for kmeans_server
+            std::vector<std::vector<double>> _points;
 
+        public:
+            kmeans(int k);
+
+            ~kmeans();
+
+            static boost::program_options::options_description
+            configure_args(int argc, char **argv);
+
+            void train(utils::data::big_data &training_data);
+//        std::vector<int> test(data_frame* test_data);
+
+        };
+    }
 }
 
 
 
-#endif //KMEANS_H
+#endif //ALGORITHMS_KMEANS_KMEANS_H

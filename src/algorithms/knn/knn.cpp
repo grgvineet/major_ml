@@ -5,7 +5,7 @@
 #include "knn.h"
 
 algo::knn::knn() {
-    class_name = "knn";
+    _name = "knn";
 }
 
 algo::knn::~knn() {
@@ -13,5 +13,5 @@ algo::knn::~knn() {
 }
 
 void algo::knn::say_hello() {
-    std::cout << "Hello from " << class_name << std::endl;
+    std::cout << "Hello from " << _name << std::endl;
 }

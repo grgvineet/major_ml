@@ -2,8 +2,8 @@
 // Created by vineet on 2/11/16.
 //
 
-#ifndef SERVER_DATA_FRAME_H
-#define SERVER_DATA_FRAME_H
+#ifndef UTILS_DATA_SERVER_DATA_FRAME_H
+#define UTILS_DATA_SERVER_DATA_FRAME_H
 
 #include <vector>
 #include <map>
@@ -35,10 +35,14 @@ namespace utils {
             bool remove_column(const int index);
             bool remove_column(const std::string& colname);
 
+            std::vector<double> get_row(int index);
+
             data_row operator[](const int index); // Return row
             data_row operator[](const std::string& colname);
 
-            int get_size();
+
+            int get_size() const;
+            int get_ncols() const;
             void print(int rows = -1);
             void print_col_names();
 
@@ -47,9 +51,11 @@ namespace utils {
             // wrapped into a component action. The macro below defines a new type
             // 'get_data_action' which represents the (possibly remote) member function
             // partition::get_data().
+            HPX_DEFINE_COMPONENT_DIRECT_ACTION(data_frame_server, get_ncols, get_ncols_action);
             HPX_DEFINE_COMPONENT_DIRECT_ACTION(data_frame_server, remove_row, remove_row_action);
             HPX_DEFINE_COMPONENT_DIRECT_ACTION(data_frame_server, print, print_action);
             HPX_DEFINE_COMPONENT_DIRECT_ACTION(data_frame_server, get_size, get_size_action);
+            HPX_DEFINE_COMPONENT_DIRECT_ACTION(data_frame_server, get_row, get_row_action);
 
         private:
 
@@ -67,4 +73,4 @@ namespace utils {
 
 
 
-#endif //SERVER_DATA_FRAME_H
+#endif //UTILS_DATA_SERVER_DATA_FRAME_H
