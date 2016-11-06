@@ -6,10 +6,6 @@
 
 #include <vector>
 
-algo::kmeans::kmeans_client::kmeans_client(int k) {
-    _k = k;
-}
-
 algo::kmeans::kmeans_client::~kmeans_client() {
 
 }

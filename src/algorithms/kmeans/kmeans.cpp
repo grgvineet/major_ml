@@ -8,10 +8,12 @@
 #include "utils/utils.cpp"
 #include "utils/math/euclidean_distance.h"
 
-algo::kmeans::kmeans::kmeans(int k) {
+algo::kmeans::kmeans::kmeans(int k, int max_iter, int seed) : algo::algo_base(seed){
     _name = "kmeans";
     _k = k;
+    _max_iter = max_iter;
 
+    std::cerr << "Seed is " << _seed << std::endl;
     _points.reserve(k);
 }
 
@@ -23,6 +25,9 @@ boost::program_options::options_description
 algo::kmeans::kmeans::configure_args(int argc, char** argv) {
     using namespace boost::program_options;
     options_description description("Allowed options");
+    description.add_options()
+            ("k", value<int>(), "Number of clusters to form")
+            ("max-iter", value<int>()->default_value(10),"Max number of iterations");
     return algo::algo_base::configure_args(description);
 }
 
@@ -33,7 +38,7 @@ void algo::kmeans::kmeans::train(utils::data::big_data &training_data) {
     std::vector<kmeans_client> clients;
     clients.reserve(training_data.get_num_data_frames());
     for(int i=0; i<training_data.get_num_data_frames(); i++) {
-        clients.push_back(kmeans_client(hpx::get_colocation_id(training_data.get_data_frame(i).get_id()).get(), _k));
+        clients.push_back(kmeans_client(hpx::get_colocation_id(training_data.get_data_frame(i).get_id()).get(), _k, _max_iter, _seed));
     }
 
     // Fetch details about data from data frame on this locality for faster computation
@@ -42,7 +47,6 @@ void algo::kmeans::kmeans::train(utils::data::big_data &training_data) {
 
     // Initialise K random points from data set, this is done using kMeans++ algorithm
     int this_num_rows = this_df.get_size().get();
-    std::srand(std::time(0));
     _points.push_back(this_df.get_row(std::rand()%this_num_rows).get());
     hpx::util::high_resolution_timer t; t.restart();
     for(int i=0; i<_k-1; i++) {
@@ -59,7 +63,7 @@ void algo::kmeans::kmeans::train(utils::data::big_data &training_data) {
             std::vector<double> temp(points_future[j].get());
             double temp_distance = temp.back();
             temp.pop_back();
-            if (temp_distance > distance && utils::does_not_contain<double>(_points, temp)) {
+            if (temp_distance > distance) {
                 distance = temp_distance;
                 farthest_point = std::move(temp);
             }
@@ -78,9 +82,8 @@ void algo::kmeans::kmeans::train(utils::data::big_data &training_data) {
     ////////////////////////////////////////////////////
 
     // Run kmeans until converged
-    int iterations = 0;
-    while(true) {
-        iterations++;
+
+    for(int iterations = 0; iterations < _max_iter; iterations++) {
         typedef std::vector<std::vector<double>> double2d;
         std::vector<hpx::future<double2d>> fut_points;
         fut_points.reserve(clients.size());
@@ -110,7 +113,6 @@ void algo::kmeans::kmeans::train(utils::data::big_data &training_data) {
             _points = new_points;
         }
     }
-    std::cerr << "Iterations performed " << iterations << std::endl;
     std::cerr << "Final cluster centers " << std::endl;
     for(int i=0; i<_k; i++) {
         for(int j=0; j<ncols; j++) {

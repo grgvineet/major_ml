@@ -18,8 +18,6 @@ namespace algo {
             int _k; // K for kmeans_server
 
         public:
-            kmeans_client(int k);
-
             ~kmeans_client();
 
 
@@ -33,8 +31,8 @@ namespace algo {
 //                    : base_type(hpx::new_<server::kmeans_server>(hpx::colocated(where), k)) {}
 
             // Create new component on locality 'where' and initialize the held data
-            kmeans_client(hpx::id_type where, int k)
-                    : base_type(hpx::new_<server::kmeans_server>(where, k)) {}
+            kmeans_client(hpx::id_type where, int k, int max_iter, int seed)
+                    : base_type(hpx::new_<server::kmeans_server>(where, k, max_iter, seed)) {}
 
             // Attach a future representing a (possibly remote) partition.
             kmeans_client(hpx::future<hpx::id_type> &&id)

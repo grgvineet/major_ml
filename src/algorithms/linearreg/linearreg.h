@@ -11,7 +11,7 @@ namespace algo {
 
     class linearreg : public algo_base {
     public:
-        linearreg();
+        linearreg(int seed);
         ~linearreg();
 
         void say_hello();

@@ -4,7 +4,7 @@
 
 #include "randomforest.h"
 
-algo::randomforest::randomforest() {
+algo::randomforest::randomforest(int seed) : algo_base(seed) {
     _name = "randomforest";
 }
 

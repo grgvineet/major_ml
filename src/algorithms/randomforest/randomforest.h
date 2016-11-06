@@ -11,7 +11,7 @@ namespace algo {
 
     class randomforest : public algo_base {
     public:
-        randomforest();
+        randomforest(int seed);
         ~randomforest();
 
         void say_hello();

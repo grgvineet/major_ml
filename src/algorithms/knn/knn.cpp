@@ -4,7 +4,7 @@
 
 #include "knn.h"
 
-algo::knn::knn() {
+algo::knn::knn(int seed) : algo_base(seed) {
     _name = "knn";
 }
 

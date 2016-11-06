@@ -15,11 +15,16 @@ namespace algo {
 
     protected:
         std::string _name;
+        int _seed;
 
     public:
 
         static boost::program_options::options_description
         configure_args(boost::program_options::options_description &description);
+
+        algo_base(int seed);
+
+        void set_seed(int seed);
     };
 }
 

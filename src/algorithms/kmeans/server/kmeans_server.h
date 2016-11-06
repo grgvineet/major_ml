@@ -13,14 +13,17 @@ namespace algo {
     namespace kmeans {
         namespace server {
 
-            struct kmeans_server : algo_base, hpx::components::component_base<kmeans_server> {
+            struct kmeans_server : hpx::components::component_base<kmeans_server> {
 
             public:
 
                 // construct new instances
                 kmeans_server() {}
 
-                kmeans_server(int k) : _k(k) {}
+                kmeans_server(int k, int max_iter, int seed) :
+                        _k(k),
+                        _max_iter(max_iter),
+                        _seed(seed) {}
 
                 int get_k() const {
                     return _k;
@@ -42,6 +45,7 @@ namespace algo {
 
             private:
                 int _k; // K for k-means
+                int _max_iter, _seed;
 
                 // FIXME : Remove it from here, dirty hack to improve kmeans++ time complexity
                 std::vector<double> _kmeanspp_dist;

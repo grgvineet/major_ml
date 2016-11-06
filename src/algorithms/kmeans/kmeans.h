@@ -17,10 +17,11 @@ namespace algo {
 
         private:
             int _k; // K for kmeans_server
+            int _max_iter;
             std::vector<std::vector<double>> _points;
 
         public:
-            kmeans(int k);
+            kmeans(int k, int max_iter = 10, int seed = std::rand());
 
             ~kmeans();
 

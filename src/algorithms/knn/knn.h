@@ -11,7 +11,7 @@ namespace algo {
 
     class knn : public algo_base{
     public:
-        knn();
+        knn(int seed);
         ~knn();
 
         void say_hello();

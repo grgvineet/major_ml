@@ -5,7 +5,7 @@
 #include "linearreg.h"
 
 
-algo::linearreg::linearreg() {
+algo::linearreg::linearreg(int seed) : algo_base(seed) {
     _name = "linearreg";
 }
 
