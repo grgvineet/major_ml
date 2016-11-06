@@ -8,6 +8,7 @@ foreach(dir ${DIRS})
 endforeach()
 
 set(SOURCES
+        utils.h
         utils.cpp
         )
 

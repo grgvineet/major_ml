@@ -5,7 +5,7 @@
 #include <iostream>
 #include "data_frame_server.h"
 
-#include "utils/utils.cpp"
+#include "utils/utils.h"
 
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/algorithm/string.hpp>

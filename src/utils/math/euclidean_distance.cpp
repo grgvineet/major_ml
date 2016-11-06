@@ -20,7 +20,7 @@ namespace utils {
                 temp *= temp;
                 ans += temp;
             }
-            return ans;
+            return std::sqrt(ans);
         }
 
         bool is_converged(std::vector<std::vector<double>>& a, std::vector<std::vector<double>>& b) {
@@ -33,11 +33,11 @@ namespace utils {
                 return true; // Break the loop where it is called
             }
             for(int i=0; i<a.size(); i++) {
-                if (a[0].size() != b[0].size()) {
+                if (a[i].size() != b[i].size()) {
                     std::cerr << __PRETTY_FUNCTION__ << " : Dimensions of matrix a and b does not match" << std::endl;
                     return true; // Break the loop where it is called
                 }
-                for(int j=0; j<a[0].size(); j++) {
+                for(int j=0; j<a[i].size(); j++) {
                     double dist = std::fabs(a[i][j]-b[i][j]);
                     if (dist > 1e-2) {
                         return false;

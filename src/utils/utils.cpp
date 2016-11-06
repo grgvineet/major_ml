@@ -2,12 +2,9 @@
 // Created by vineet on 2/11/16.
 //
 
-#ifndef UTILS_UTILS_CPP
-#define UTILS_UTILS_CPP
+#include "utils.h"
 
-#include <string>
 #include <sstream>
-#include <vector>
 #include <iterator>
 
 #include <boost/tokenizer.hpp>
@@ -61,7 +58,19 @@ namespace utils {
         }
         return elems;
     }
+
+    template<typename Type>
+    bool does_not_contain(std::vector<std::vector<Type>>& source, std::vector<Type>& value) {
+        if (source.empty()) {
+            return true;
+        }
+        auto source_begin = source.begin();
+        auto source_end = source.end();
+        for(; source_begin != source_end; source_begin++) {
+            if (std::equal(source_begin->begin(), source_begin->end(), value.begin())) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
-
-#endif // UTILS_UTILS_CPP
-

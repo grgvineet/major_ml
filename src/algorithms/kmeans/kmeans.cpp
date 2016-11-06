@@ -5,6 +5,7 @@
 #include "kmeans.h"
 #include "kmeans_client.h"
 
+#include "utils/utils.cpp"
 #include "utils/math/euclidean_distance.h"
 
 algo::kmeans::kmeans::kmeans(int k) {
@@ -43,27 +44,29 @@ void algo::kmeans::kmeans::train(utils::data::big_data &training_data) {
     int this_num_rows = this_df.get_size().get();
     std::srand(std::time(0));
     _points.push_back(this_df.get_row(std::rand()%this_num_rows).get());
-    std::cerr << "Number of points :" << _points[0].size() << std::endl;
-    for(int i=1; i<_k; i++) {
+    hpx::util::high_resolution_timer t; t.restart();
+    for(int i=0; i<_k-1; i++) {
         std::vector<hpx::future<std::vector<double>>> points_future;
         points_future.reserve(clients.size());
         for(int j=0; j<clients.size(); j++) {
-            points_future.push_back(clients[j].kmeanspp(training_data.get_data_frame(j), _points));
+            points_future.push_back(clients[j].kmeanspp(training_data.get_data_frame(j), _points[i]));
         }
         hpx::wait_all(points_future);
-        int distance = INT_MIN;
+        double distance = DBL_MIN;
         std::vector<double> farthest_point;
-        for(int j=0; j<points_future.size(); j++) {
+        int points_future_size = points_future.size();
+        for(int j=0; j<points_future_size; j++) {
             std::vector<double> temp(points_future[j].get());
-            if (temp.back() > distance) {
-                distance = temp.back();
-                temp.pop_back();
+            double temp_distance = temp.back();
+            temp.pop_back();
+            if (temp_distance > distance && utils::does_not_contain<double>(_points, temp)) {
+                distance = temp_distance;
                 farthest_point = std::move(temp);
             }
         }
         _points.push_back(std::move(farthest_point));
     }
-
+    std::cerr << "kMeans++ time :" << t.elapsed() << std::endl;
     // K random points initialise, print
 //    std::cout << "Selected k random points are " << std::endl;
 //    for(int i=0; i<_k; i++) {
@@ -75,8 +78,9 @@ void algo::kmeans::kmeans::train(utils::data::big_data &training_data) {
     ////////////////////////////////////////////////////
 
     // Run kmeans until converged
-
+    int iterations = 0;
     while(true) {
+        iterations++;
         typedef std::vector<std::vector<double>> double2d;
         std::vector<hpx::future<double2d>> fut_points;
         fut_points.reserve(clients.size());
@@ -106,6 +110,7 @@ void algo::kmeans::kmeans::train(utils::data::big_data &training_data) {
             _points = new_points;
         }
     }
+    std::cerr << "Iterations performed " << iterations << std::endl;
     std::cerr << "Final cluster centers " << std::endl;
     for(int i=0; i<_k; i++) {
         for(int j=0; j<ncols; j++) {

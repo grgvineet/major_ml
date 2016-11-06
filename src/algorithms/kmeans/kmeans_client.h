@@ -58,9 +58,14 @@ namespace algo {
                 return hpx::async(act, get_id(), df, points);
             }
 
-            hpx::future<std::vector<double>> kmeanspp(utils::data::data_frame df, std::vector<std::vector<double>> points) {
+            hpx::future<std::vector<double>> kmeanspp(utils::data::data_frame df, std::vector<double> point) {
                 server::kmeans_server::kmeanspp_action act;
-                return hpx::async(act, get_id(), df, points);
+                return hpx::async(act, get_id(), df, point);
+            }
+
+            hpx::future<void> kmeanspp_clear_state() {
+                server::kmeans_server::kmeanspp_clear_state_action act;
+                return hpx::async(act, get_id());
             }
 
         };
