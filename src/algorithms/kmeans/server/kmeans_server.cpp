@@ -5,6 +5,7 @@
 #include "kmeans_server.h"
 
 #include "utils/math/euclidean_distance.h"
+#include <hpx/runtime/get_ptr.hpp>
 
 namespace algo {
 
@@ -14,15 +15,15 @@ namespace algo {
 
             std::vector<std::vector<double>>
             kmeans_server::train(utils::data::data_frame data_frame, std::vector<std::vector<double>> points) {
-                int nrows = data_frame.get_size().get();
-                int ncols = data_frame.get_ncols().get();
+                int nrows = _data_frame->get_size();
+                int ncols = _data_frame->get_ncols();
 
                 std::vector<std::vector<double>> res = std::vector<std::vector<double>>(points.size(), std::vector<double>(ncols+1, 0));
 
                 for(int i=0; i<nrows; i++) {
                     // FIXME : Optimise this, as data frame resides on this locality the following can be optimised,
                     // FIXME : i.e if raw ptr is used
-                    std::vector<double> data_row(data_frame.get_row(i).get());
+                    std::vector<double> data_row(_data_frame->get_row(i));
                     double min_dist = DBL_MAX;
                     int min_index;
                     int points_size = points.size();
@@ -46,8 +47,11 @@ namespace algo {
             kmeans_server::kmeanspp(utils::data::data_frame data_frame, std::vector<double> point) {
                 // FIXME : Not according to proper algo, but will work
 
-                int nrows = data_frame.get_size().get();
-                int ncols = data_frame.get_ncols().get();
+//                std::shared_ptr<utils::data::server::data_frame_server> dfp =
+//                        hpx::get_ptr<utils::data::server::data_frame_server>(data_frame.get_gid()).get();
+
+                int nrows =_data_frame->get_size();
+                int ncols = _data_frame->get_ncols();
 
                 if (_kmeanspp_dist.empty()) {
                     // Should initialise _kmeanspp_dist with zero
@@ -60,7 +64,8 @@ namespace algo {
                 for(int i=0; i<nrows; i++) {
                     // FIXME : Optimise this, as data frame resides on this locality the following can be optimised,
                     // FIXME : i.e if raw ptr is used
-                    std::vector<double> this_row = data_frame.get_row(i).get();
+//                    std::vector<double> this_row = data_frame.get_row(i).get();
+                    std::vector<double> this_row(_data_frame->get_row(i));
                     double dist = utils::math::euclid_square(this_row, point);
                     _kmeanspp_dist[i] += dist;
                     if (_kmeanspp_dist[i] > max_distance) {
@@ -77,6 +82,12 @@ namespace algo {
             void kmeans_server::kmeanspp_clear_state() {
                 _kmeanspp_dist.clear();
             }
+
+            void kmeans_server::store_data_frame_pointer(utils::data::data_frame data_frame) {
+                _data_frame =
+                        hpx::get_ptr<utils::data::server::data_frame_server>(data_frame.get_gid()).get();
+
+            }
         }
     }
 }
@@ -92,3 +103,5 @@ typedef algo::kmeans::server::kmeans_server::kmeanspp_action kmeanspp_action;
 HPX_REGISTER_ACTION(kmeanspp_action);
 typedef algo::kmeans::server::kmeans_server::kmeanspp_clear_state_action kmeanspp_clear_state_action;
 HPX_REGISTER_ACTION(kmeanspp_clear_state_action);
+typedef algo::kmeans::server::kmeans_server::store_data_frame_pointer_action store_data_frame_pointer_action;
+HPX_REGISTER_ACTION(store_data_frame_pointer_action);

@@ -66,6 +66,11 @@ namespace algo {
                 return hpx::async(act, get_id());
             }
 
+            hpx::future<void> store_data_frame_pointer(utils::data::data_frame df) {
+                server::kmeans_server::store_data_frame_pointer_action act;
+                return hpx::async(act, get_id(), df);
+            }
+
         };
     }
 

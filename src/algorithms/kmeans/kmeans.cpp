@@ -39,6 +39,7 @@ void algo::kmeans::kmeans::train(utils::data::big_data &training_data) {
     clients.reserve(training_data.get_num_data_frames());
     for(int i=0; i<training_data.get_num_data_frames(); i++) {
         clients.push_back(kmeans_client(hpx::get_colocation_id(training_data.get_data_frame(i).get_id()).get(), _k, _max_iter, _seed));
+        clients[i].store_data_frame_pointer(training_data.get_data_frame(i)).get();
     }
 
     // Fetch details about data from data frame on this locality for faster computation
