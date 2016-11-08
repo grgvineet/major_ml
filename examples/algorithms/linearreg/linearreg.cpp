@@ -4,12 +4,21 @@
 
 #include <iostream>
 
+#include <hpx/hpx_init.hpp>
+#include <hpx/hpx.hpp>
+
 #include "algorithms/linearreg/linearreg.h"
 
-int main() {
-    std::cout << "Hello linearreg" << std::endl;
+int hpx_main(boost::program_options::variables_map& vm)
+{
+    utils::data::big_data bg("million.csv", false);
+    std::cerr << bg.get_size() << std::endl;
+    algo::linearreg::linearreg linearreg;
+    linearreg.train(bg, 1); // 0 based indexing
+    return hpx::finalize();
+}
 
-    algo::linearreg linearreg;
-    linearreg.say_hello();
-    return 0;
+int main(int argc, char* argv[]) {
+    boost::program_options::options_description desc = algo::linearreg::linearreg::configure_args(argc, argv);
+    return hpx::init(desc, argc, argv);
 }

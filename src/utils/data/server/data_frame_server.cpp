@@ -240,6 +240,10 @@ namespace utils {
             return nrows;
         }
 
+            std::vector<double> &data_frame_server::get_column(int index) {
+                return _data[index];
+            }
+
         }}// end namespace data
 } // end namespace utils
 

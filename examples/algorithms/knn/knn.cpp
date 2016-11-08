@@ -9,7 +9,7 @@
 int main() {
     std::cout << "Hello knn" << std::endl;
 
-    algo::knn knn;
+    algo::knn knn(0);
     knn.say_hello();
     return 0;
 }

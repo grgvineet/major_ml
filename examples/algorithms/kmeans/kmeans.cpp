@@ -12,13 +12,13 @@
 int hpx_main(boost::program_options::variables_map& vm)
 {
     utils::data::big_data bg("cat_data.csv", false);
-    std::cout << bg.get_size();
-    algo::kmeans::kmeans kmeans(3);
+    std::cerr << bg.get_size() << std::endl;
+    algo::kmeans::kmeans kmeans(3, 12);
     kmeans.train(bg);
     return hpx::finalize();
 }
 
 int main(int argc, char* argv[]) {
-    algo::kmeans::kmeans::configure_args(argc, argv);
-    return hpx::init(argc, argv);
+    boost::program_options::options_description desc = algo::kmeans::kmeans::configure_args(argc, argv);
+    return hpx::init(desc, argc, argv);
 }

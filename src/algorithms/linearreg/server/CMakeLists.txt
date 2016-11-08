@@ -1,19 +1,9 @@
 # Define the files that we need to compile.
 # Anything not in this list will not be compiled into mlpack.
 set(SOURCES
-        linearreg_client.h
-        linearreg_client.cpp
-        linearreg.cpp
-        linearreg.h
+        linearreg_server.h
+        linearreg_server.cpp
         )
-
-set(DIRS
-        server
-        )
-
-foreach(dir ${DIRS})
-    add_subdirectory(${dir})
-endforeach()
 
 # add directory name to sources
 set(DIR_SRCS)

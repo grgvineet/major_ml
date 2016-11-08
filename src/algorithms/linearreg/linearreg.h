@@ -5,19 +5,37 @@
 #ifndef ALGORITHMS_LINEARREG_LINEARREG_H
 #define ALGORITHMS_LINEARREG_LINEARREG_H
 
-#include "../algo_base.h"
+#include "algorithms/algo_base.h"
+#include "utils/data/big_data.h"
+
+#include "algorithms/linearreg/server/linearreg_server.h"
 
 namespace algo {
 
-    class linearreg : public algo_base {
-    public:
-        linearreg(int seed);
-        ~linearreg();
+    namespace linearreg {
+        struct linearreg : algo_base {
 
-        void say_hello();
-    };
+        private:
+            int label_col;
+            std::string label_colname;
+            std::vector<double> _theta;
 
+        public:
+            linearreg(int seed = std::rand());
+
+            ~linearreg();
+
+            static boost::program_options::options_description
+            configure_args(int argc, char **argv);
+
+            void train(utils::data::big_data &training_data, int label_col);
+            void train(utils::data::big_data &training_data, std::string label_colname);
+//        std::vector<int> test(data_frame* test_data);
+
+        };
+    }
 }
+
 
 
 #endif //ALGORITHMS_LINEARREG_LINEARREG_H

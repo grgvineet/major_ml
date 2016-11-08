@@ -40,6 +40,8 @@ namespace utils {
             data_row operator[](const int index); // Return row
             data_row operator[](const std::string& colname);
 
+            std::vector<double>& get_column(int index);
+
 
             int get_size() const;
             int get_ncols() const;
