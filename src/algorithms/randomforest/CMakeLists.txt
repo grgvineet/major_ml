@@ -8,6 +8,7 @@ set(SOURCES
 # add directory name to sources
 set(DIR_SRCS)
 foreach(file ${SOURCES})
+    set(BOOST_LIBRARYDIR ~/Documents/boost_1_61_0/libs/)
     set(DIR_SRCS ${DIR_SRCS} ${CMAKE_CURRENT_SOURCE_DIR}/${file})
 endforeach()
 

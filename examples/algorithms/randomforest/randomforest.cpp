@@ -9,7 +9,7 @@
 int main() {
     std::cout << "Hello randomforest" << std::endl;
 
-    algo::randomforest randomforest;
-    randomforest.say_hello();
+    algo::randomforest::randomforest rf(3);
+    rf.train_and_predict();
     return 0;
 }
