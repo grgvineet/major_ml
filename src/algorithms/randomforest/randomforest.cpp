@@ -4,6 +4,7 @@
 #include <hpx/hpx_init.hpp>
 #include <hpx/hpx.hpp>
 #include <hpx/runtime/serialization/serialize.hpp>
+#include <hpx/runtime/serialization/array.hpp>
 
 algo::randomforest::randomforest::randomforest(int seed) : algo::algo_base(seed)
 {
@@ -54,10 +55,7 @@ void algo::randomforest::randomforest::setParameters(int training_samples, int t
     num_sample_classes = classes;
 }
 
-int algo::randomforest::randomforest::train_and_predict() {
-
-//    std::uint64_t np = vm["np"].as<std::uint64_t>();   // Number of partitions.
-    std::uint64_t np = 4;
+int algo::randomforest::randomforest::train_and_predict(std::uint64_t np) {
 
     std::vector<hpx::id_type> localities = hpx::find_all_localities();
     std::size_t nl = localities.size();                // Number of localities

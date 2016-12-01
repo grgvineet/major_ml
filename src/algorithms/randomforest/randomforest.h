@@ -34,7 +34,7 @@ namespace algo {
 
             void setParameters(int training_samples, int testing_samples, int attributes, int classes);
 
-            int train_and_predict();
+            int train_and_predict(std::uint64_t np);
 
         private:
             int num_training_samples;

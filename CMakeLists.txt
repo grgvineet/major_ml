@@ -6,11 +6,13 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
 # Instruct cmake to find the HPX settings
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_STATIC_RUNTIME ON)
+
 find_package(Boost REQUIRED COMPONENTS system iostreams)
 find_package(OpenCV REQUIRED)
 find_package(HPX REQUIRED)
 
 include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 # Build library
 # On add subdirectory, source file names will be add to $SRCS

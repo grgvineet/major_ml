@@ -3,6 +3,14 @@
 set(SOURCES
         randomforest.h
         randomforest.cpp
+        helper_functions.cpp
+        helper_functions.h
+        rf_client.cpp
+        rf_data_structures.cpp
+        rf_server.cpp
+        rf_server.h
+        serialise_opencv_mat.h
+        serialise_opencv_mat.cpp
         )
 
 # add directory name to sources

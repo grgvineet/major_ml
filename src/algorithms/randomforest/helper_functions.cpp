@@ -1,3 +1,5 @@
+#include "helper_functions.h"
+
 void algo::randomforest::read_data_from_csv(std::string filename, cv::Mat data, cv::Mat classes, std::uint64_t num_samples, std::uint64_t num_attributes)
 {
     float tmp;
