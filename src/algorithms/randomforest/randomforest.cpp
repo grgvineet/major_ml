@@ -1,10 +1,8 @@
 #include "randomforest.h"
 #include <vector>
 #include <iostream>
-#include <hpx/hpx_init.hpp>
-#include <hpx/hpx.hpp>
-#include <hpx/runtime/serialization/serialize.hpp>
-#include <hpx/runtime/serialization/array.hpp>
+
+HPX_REGISTER_ACTION(algo::randomforest::algo_randomforest_make_prediction_action, my_action);
 
 algo::randomforest::randomforest::randomforest(int seed) : algo::algo_base(seed)
 {
@@ -55,6 +53,7 @@ void algo::randomforest::randomforest::setParameters(int training_samples, int t
     num_sample_classes = classes;
 }
 
+
 int algo::randomforest::randomforest::train_and_predict(std::uint64_t np) {
 
     std::vector<hpx::id_type> localities = hpx::find_all_localities();
@@ -69,11 +68,10 @@ int algo::randomforest::randomforest::train_and_predict(std::uint64_t np) {
     // Measure execution time.
     std::uint64_t t = hpx::util::high_resolution_clock::now();
 
-    std::vector<algo::randomforest::rf_client>current(np);
-    std::vector<hpx::future<algo::randomforest::prediction_result_struct> >next(np);
+    std::vector<hpx::future<prediction_result_struct> >next(np);
 
     //define testing data storage matrices
-    algo::randomforest::test_data_struct test_data;
+    test_data_struct test_data;
     cv::Mat testing_classifications;
     {
         using namespace cv;
@@ -86,20 +84,15 @@ int algo::randomforest::randomforest::train_and_predict(std::uint64_t np) {
         test_data.num_rows = num_testing_samples;
     }
 
+    algo_randomforest_make_prediction_action predict;
     for (std::size_t i = 0; i != np; ++i)
     {
-        current[i] = algo::randomforest::rf_client(localities[algo::randomforest::locidx(i, np, nl)],
-                               std::uint64_t(i+1),
-                               training_file_path,
-                               test_data,
-                               num_training_samples,
-                               num_attributes_per_sample);
-    }
-
-    hpx::wait_all(current);
-    for (std::size_t i = 0; i != np; ++i)
-    {
-        next[i] = current[i].get_result();
+        next[i] = hpx::async(predict,
+                             localities[algo::randomforest::locidx(i, np, nl)],
+                             training_file_path,
+                             test_data,
+                             num_training_samples,
+                             num_attributes_per_sample);
     }
 
     hpx::wait_all(next);
@@ -130,9 +123,87 @@ int algo::randomforest::randomforest::train_and_predict(std::uint64_t np) {
     }
 
     std::uint64_t elapsed = hpx::util::high_resolution_clock::now() - t;
+    std::cout << "Elapsed time: " << elapsed << std::endl;
 
     return hpx::finalize();
 
+}
+
+algo::randomforest::prediction_result_struct algo::randomforest::make_prediction(std::string filename, algo::randomforest::test_data_struct test_data, std::uint64_t num_samples, std::uint64_t num_attributes)
+{
+    using namespace cv;
+    Mat training_data =Mat(num_samples, num_attributes, CV_32FC1);
+    Mat training_classifications = Mat(num_samples, 1, CV_32FC1);
+
+    algo::randomforest::read_data_from_csv(filename, training_data, training_classifications, num_samples, num_attributes);
+
+    Mat var_type = Mat(num_attributes + 1, 1, CV_8U );
+    var_type.setTo(Scalar(CV_VAR_NUMERICAL) ); // all inputs are numerical
+    var_type.at<uchar>(num_attributes, 0) = CV_VAR_CATEGORICAL;
+
+    float priors[] = {1,1,1,1,1,1,1,1,1,1};   // weights of each classification for classes
+    CvRTParams params = CvRTParams(25, // max depth
+                                   5, // min sample count
+                                   0, // regression accuracy: N/A here
+                                   false, // compute surrogate split, no missing data
+                                   15, // max number of categories (use sub-optimal algorithm for larger numbers)
+                                   priors, // the array of priors
+                                   false,  // calculate variable importance
+                                   4,       // number of variables randomly selected at node and used to find the best split(s).
+                                   100,	 // max number of trees in the forest
+                                   0.01, // forrest accuracy
+                                   CV_TERMCRIT_ITER |	CV_TERMCRIT_EPS // termination criteria
+    );
+    CvRTrees* rtree = new CvRTrees;
+    rtree->train(training_data, CV_ROW_SAMPLE, training_classifications, Mat(), Mat(), var_type, Mat(), params);
+
+    Mat test_data_class = Mat(test_data.num_rows, 1, CV_32FC1);
+    for (int tsample = 0; tsample < test_data.num_rows; tsample++)
+    {
+        Mat test_sample = test_data.samples.row(tsample);
+        test_data_class.at<float>(tsample, 0) = rtree->predict(test_sample, Mat());
+    }
+    prediction_result_struct result(test_data_class, test_data.num_rows);
+    return result;
+}
+
+void algo::randomforest::read_data_from_csv(std::string filename, cv::Mat data, cv::Mat classes, std::uint64_t num_samples, std::uint64_t num_attributes)
+{
+    float tmp;
+    std::string str,var;
+    std::string::size_type sz;     // alias of size_t
+    std::ifstream myfile( filename );
+    if( !myfile )
+    {
+        printf("ERROR: cannot read file %s\n",  filename.c_str());
+        return ; // all not OK
+    }
+
+    for(int line = 0; line < num_samples; line++)
+    {
+        std::getline(myfile, str);
+        std::istringstream ss(str);
+
+        for(int attribute = 0; attribute < num_attributes + 1; attribute++)
+        {
+            if (attribute < num_attributes)
+            {
+                std::getline(ss, var, ',');
+                data.at<float>(line, attribute) = std::stof (var,&sz);
+            }
+            else if (attribute == num_attributes)
+            {
+                std::getline(ss, var, ',');
+                classes.at<float>(line, 0) =  std::stof (var,&sz);
+            }
+        }
+    }
+    return ; // all OK
+}
+
+std::size_t  algo::randomforest::locidx(std::size_t i, std::size_t np, std::size_t nl)
+{
+    return i / (np/nl);
 }
 
 
