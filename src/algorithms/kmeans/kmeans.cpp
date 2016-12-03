@@ -39,16 +39,16 @@ void algo::kmeans::kmeans::train(utils::data::big_data &training_data) {
     clients.reserve(training_data.get_num_data_frames());
     for(int i=0; i<training_data.get_num_data_frames(); i++) {
         clients.push_back(kmeans_client(hpx::get_colocation_id(training_data.get_data_frame(i).get_id()).get(), _k, _max_iter, _seed));
-        clients[i].store_data_frame_pointer(training_data.get_data_frame(i)).get();
     }
 
     // Fetch details about data from data frame on this locality for faster computation
-    data_frame this_df = training_data.get_this_data_frame();
-    int ncols = this_df.get_ncols().get();
+    utils::data::server::data_frame_server* this_df =
+            reinterpret_cast<utils::data::server::data_frame_server*>(training_data.get_this_data_frame().get_local_ptr().get());
+    int ncols = this_df->get_ncols();
 
     // Initialise K random points from data set, this is done using kMeans++ algorithm
-    int this_num_rows = this_df.get_size().get();
-    _points.push_back(this_df.get_row(std::rand()%this_num_rows).get());
+    int this_num_rows = this_df->get_size();
+    _points.push_back(this_df->get_row(std::rand()%this_num_rows));
     hpx::util::high_resolution_timer t; t.restart();
     for(int i=0; i<_k-1; i++) {
         std::vector<hpx::future<std::vector<double>>> points_future;

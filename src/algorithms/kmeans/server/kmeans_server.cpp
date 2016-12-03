@@ -15,6 +15,8 @@ namespace algo {
 
             std::vector<std::vector<double>>
             kmeans_server::train(utils::data::data_frame data_frame, std::vector<std::vector<double>> points) {
+                utils::data::server::data_frame_server* _data_frame =
+                        reinterpret_cast<utils::data::server::data_frame_server*>(data_frame.get_local_ptr().get());
                 int nrows = _data_frame->get_size();
                 int ncols = _data_frame->get_ncols();
 
@@ -47,8 +49,8 @@ namespace algo {
             kmeans_server::kmeanspp(utils::data::data_frame data_frame, std::vector<double> point) {
                 // FIXME : Not according to proper algo, but will work
 
-//                std::shared_ptr<utils::data::server::data_frame_server> dfp =
-//                        hpx::get_ptr<utils::data::server::data_frame_server>(data_frame.get_gid()).get();
+                utils::data::server::data_frame_server* _data_frame =
+                        reinterpret_cast<utils::data::server::data_frame_server*>(data_frame.get_local_ptr().get());
 
                 int nrows =_data_frame->get_size();
                 int ncols = _data_frame->get_ncols();
@@ -82,12 +84,6 @@ namespace algo {
             void kmeans_server::kmeanspp_clear_state() {
                 _kmeanspp_dist.clear();
             }
-
-            void kmeans_server::store_data_frame_pointer(utils::data::data_frame data_frame) {
-                _data_frame =
-                        hpx::get_ptr<utils::data::server::data_frame_server>(data_frame.get_gid()).get();
-
-            }
         }
     }
 }
@@ -103,5 +99,3 @@ typedef algo::kmeans::server::kmeans_server::kmeanspp_action kmeanspp_action;
 HPX_REGISTER_ACTION(kmeanspp_action);
 typedef algo::kmeans::server::kmeans_server::kmeanspp_clear_state_action kmeanspp_clear_state_action;
 HPX_REGISTER_ACTION(kmeanspp_clear_state_action);
-typedef algo::kmeans::server::kmeans_server::store_data_frame_pointer_action store_data_frame_pointer_action;
-HPX_REGISTER_ACTION(store_data_frame_pointer_action);

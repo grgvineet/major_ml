@@ -45,15 +45,12 @@ namespace algo {
                 HPX_DEFINE_COMPONENT_DIRECT_ACTION(kmeans_server, kmeanspp, kmeanspp_action);
                 HPX_DEFINE_COMPONENT_DIRECT_ACTION(kmeans_server, get_k, get_k_action);
 
-                HPX_DEFINE_COMPONENT_DIRECT_ACTION(kmeans_server, store_data_frame_pointer, store_data_frame_pointer_action);
-
             private:
                 int _k; // K for k-means
                 int _max_iter, _seed;
 
                 // FIXME : Remove it from here, dirty hack to improve kmeans++ time complexity
                 std::vector<double> _kmeanspp_dist;
-                std::shared_ptr<utils::data::server::data_frame_server> _data_frame;
 
             };
         }

@@ -52,6 +52,13 @@ namespace utils {
             : base_type(std::move(c))
             {}
 
+            // FIXME : Use some hpx defined method
+            // I can't seem to find any hpx method to get local ptr, one that is preset causes the program to crash
+            hpx::future<std::uint64_t> get_local_ptr() {
+                utils::data::server::data_frame_server::get_local_ptr_action act;
+                return hpx::async(act, get_id());
+            }
+
             hpx::future<void> print(int rows = -1) const
             {
                 utils::data::server::data_frame_server::print_action act;

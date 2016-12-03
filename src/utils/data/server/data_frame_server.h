@@ -25,6 +25,9 @@ namespace utils {
             explicit data_frame_server(int ncols);
             explicit data_frame_server(std::string path, bool header = false);
 
+            // To be used only if data frame is accessed from same locality
+            std::uint64_t get_local_ptr();
+
             void set_col_names(std::vector<std::string>& colnames);
             bool remove_row(int index);
             bool insert_row(data_row dr);
@@ -55,6 +58,7 @@ namespace utils {
             // wrapped into a component action. The macro below defines a new type
             // 'get_data_action' which represents the (possibly remote) member function
             // partition::get_data().
+            HPX_DEFINE_COMPONENT_DIRECT_ACTION(data_frame_server, get_local_ptr, get_local_ptr_action);
             HPX_DEFINE_COMPONENT_DIRECT_ACTION(data_frame_server, get_ncols, get_ncols_action);
             HPX_DEFINE_COMPONENT_DIRECT_ACTION(data_frame_server, remove_row, remove_row_action);
             HPX_DEFINE_COMPONENT_DIRECT_ACTION(data_frame_server, print, print_action);
