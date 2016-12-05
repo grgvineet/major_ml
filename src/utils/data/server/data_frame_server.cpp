@@ -34,6 +34,8 @@ namespace utils {
             if (!file.is_open()) {
                 std::cerr << __PRETTY_FUNCTION__ << " : Cannot open file "
                           << path << std::endl;
+                _ncols = 0;
+                _data = std::vector<std::vector<double> >(_ncols, std::vector<double>(0));
                 return;
             }
 

@@ -32,8 +32,6 @@ namespace algo {
                 std::vector<std::vector<double>>
                 train(utils::data::data_frame data_frame, std::vector<std::vector<double>> points);
 
-                void store_data_frame_pointer(utils::data::data_frame data_frame);
-
                 void kmeanspp_clear_state(); // Don't think it is required, but still!!
                 std::vector<double> kmeanspp(utils::data::data_frame data_frame, std::vector<double> points);
                 // Every member function which has to be invoked remotely needs to be

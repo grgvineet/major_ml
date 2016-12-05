@@ -20,6 +20,12 @@ namespace algo {
                 int nrows = _data_frame->get_size();
                 int ncols = _data_frame->get_ncols();
 
+                if (nrows == 0 || ncols == 0) {
+                    // Handle the case where data frame is not present on this server
+                    // May be entered filename is not present
+                    return std::vector<std::vector<double>>(points.size(), std::vector<double>(ncols+1, 0));
+                }
+
                 std::vector<std::vector<double>> res = std::vector<std::vector<double>>(points.size(), std::vector<double>(ncols+1, 0));
 
                 for(int i=0; i<nrows; i++) {
@@ -54,6 +60,14 @@ namespace algo {
 
                 int nrows =_data_frame->get_size();
                 int ncols = _data_frame->get_ncols();
+
+                if (nrows == 0 || ncols == 0) {
+                    // Handle the case where data frame is not present on this server
+                    // May be entered filename is not present
+                    // Cannot find a farther point, thus return source point itself with distance zero
+                    point.push_back(0);
+                    return point;
+                }
 
                 if (_kmeanspp_dist.empty()) {
                     // Should initialise _kmeanspp_dist with zero

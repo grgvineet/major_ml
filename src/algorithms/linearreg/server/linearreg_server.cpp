@@ -18,6 +18,12 @@ namespace algo {
                 int nrows = _data_frame->get_size();
                 int ncols = _data_frame->get_ncols();
 
+                if (nrows == 0 || ncols == 0) {
+                    // Handle the case where data frame is not present on this server
+                    // May be entered filename is not present
+                    return std::vector<std::vector<double>>(ncols, std::vector<double>(ncols, 0));
+                }
+
                 std::vector<std::vector<double>> res;
                 res.reserve(ncols);
                 std::vector<double> ones(nrows, 1);
@@ -49,11 +55,17 @@ namespace algo {
                 int nrows = _data_frame->get_size();
                 int ncols = _data_frame->get_ncols();
 
+                if (nrows == 0 || ncols == 0) {
+                    // Handle the case where data frame is not present on this server
+                    // May be entered filename is not present
+                    return std::vector<double>(ncols, 0);
+                }
+
                 std::vector<double> res;
                 std::vector<double> labels = _data_frame->get_column(label_col);
                 std::vector<double> ones(nrows, 1);
 
-                res.reserve(ncols-1);
+                res.reserve(ncols);
                 for(int i=0; i<ncols; i++) {
                     std::vector<double> col = _data_frame->get_column(i);
                     if (i == label_col) {
