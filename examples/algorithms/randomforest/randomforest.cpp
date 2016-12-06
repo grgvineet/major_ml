@@ -10,7 +10,7 @@ int hpx_main(boost::program_options::variables_map& vm)
     std::uint64_t no_localities = vm["nl"].as<std::uint64_t>();   // Number of partitions.
 
     algo::randomforest::randomforest rf(3);
-    rf.setParameters(4000, 700, 11, 10);
+    rf.setParameters(1125000, 500000, 18, 2);
     rf.train_and_predict(no_localities);
 
     return hpx::finalize();

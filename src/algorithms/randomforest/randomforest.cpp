@@ -2,12 +2,17 @@
 #include <vector>
 #include <iostream>
 
+#include <boost/tokenizer.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/foreach.hpp>
+#include <hpx/include/thread_executors.hpp>
+
 HPX_REGISTER_ACTION(algo::randomforest::algo_randomforest_make_prediction_action, my_action);
 
 algo::randomforest::randomforest::randomforest(int seed) : algo::algo_base(seed)
 {
-    testing_file_path = "test_file.csv";
-    training_file_path = "train_file.csv";
+    testing_file_path = "susy_test.csv";
+    training_file_path = "susy_train_";
 }
 
 algo::randomforest::randomforest::~randomforest()
@@ -70,6 +75,7 @@ int algo::randomforest::randomforest::train_and_predict(std::uint64_t np) {
 
     std::vector<hpx::future<prediction_result_struct> >next(np);
 
+    std::cout << "Beginning execution" << std::endl;
     //define testing data storage matrices
     test_data_struct test_data;
     cv::Mat testing_classifications;
@@ -84,16 +90,19 @@ int algo::randomforest::randomforest::train_and_predict(std::uint64_t np) {
         test_data.num_rows = num_testing_samples;
     }
 
+    std::cout << "Test data loaded" << std::endl;
     algo_randomforest_make_prediction_action predict;
     for (std::size_t i = 0; i != np; ++i)
     {
+        std::string filename = training_file_path + std::to_string(i+1) + ".csv";
         next[i] = hpx::async(predict,
                              localities[algo::randomforest::locidx(i, np, nl)],
-                             training_file_path,
+                             filename,
                              test_data,
                              num_training_samples,
                              num_attributes_per_sample);
     }
+    std::cout << "future created" << std::endl;
 
     hpx::wait_all(next);
     for (std::size_t i = 0; i != np; ++i)
@@ -131,6 +140,14 @@ int algo::randomforest::randomforest::train_and_predict(std::uint64_t np) {
 
 algo::randomforest::prediction_result_struct algo::randomforest::make_prediction(std::string filename, algo::randomforest::test_data_struct test_data, std::uint64_t num_samples, std::uint64_t num_attributes)
 {
+    std::cout << "This thread runs with a "
+            << hpx::threads::get_stack_size_name(
+                    hpx::this_thread::get_stack_size())
+            << " stack and "
+            << hpx::threads::get_thread_priority_name(
+                    hpx::this_thread::get_priority())
+            << " priority." << std::endl;
+
     using namespace cv;
     Mat training_data =Mat(num_samples, num_attributes, CV_32FC1);
     Mat training_classifications = Mat(num_samples, 1, CV_32FC1);
@@ -179,23 +196,24 @@ void algo::randomforest::read_data_from_csv(std::string filename, cv::Mat data, 
         return ; // all not OK
     }
 
+    boost::char_separator<char> delimiter(",");
     for(int line = 0; line < num_samples; line++)
     {
         std::getline(myfile, str);
-        std::istringstream ss(str);
+        boost::tokenizer<boost::char_separator<char>> tokenizer(str, delimiter);
+        int attribute = -1;
 
-        for(int attribute = 0; attribute < num_attributes + 1; attribute++)
+        BOOST_FOREACH(std::string aux, tokenizer)
         {
-            if (attribute < num_attributes)
+            if(attribute >= 0)
             {
-                std::getline(ss, var, ',');
-                data.at<float>(line, attribute) = std::stof (var,&sz);
+                std::sscanf(aux.data(), "%f", &(data.at<float>(line, attribute)));
             }
-            else if (attribute == num_attributes)
+            else
             {
-                std::getline(ss, var, ',');
-                classes.at<float>(line, 0) =  std::stof (var,&sz);
+                std::sscanf(aux.data(), "%f", &(classes.at<float>(line, 0)));
             }
+            attribute++;
         }
     }
     return ; // all OK

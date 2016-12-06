@@ -94,10 +94,7 @@ namespace algo {
 
             int train_and_predict(std::uint64_t np);
 
-
         private:
-
-
             int num_training_samples;
             int num_attributes_per_sample;
             int num_testing_samples;
