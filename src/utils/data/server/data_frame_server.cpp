@@ -137,7 +137,7 @@ namespace utils {
         }
 
         bool data_frame_server::insert_column(std::vector<double>& col, std::string colname) {
-            if (get_size() != col.size()) {
+            if (get_size() != col.size() && _ncols != 0) {
                 std::cerr << __PRETTY_FUNCTION__ << " : Number of rows in data column( "
                           << col.size() << ") does not match number of rows in data frame(" << get_size()
                           << ")" << std::endl;
@@ -147,6 +147,7 @@ namespace utils {
             _colnames_index[colname] = _ncols;
             _ncols++;
             _data.push_back(col);
+            return true;
         }
 
         bool data_frame_server::remove_column(int index) {
@@ -160,6 +161,7 @@ namespace utils {
             _colnames.erase(_colnames.begin() + index);
             _colnames_index.erase(colname);
             _data.erase(_data.begin() + index);
+            return true;
         }
 
         bool data_frame_server::remove_column(const std::string& colname) {
@@ -250,6 +252,29 @@ namespace utils {
                 return _data[index];
             }
 
+            void data_frame_server::write(std::string path) {
+
+                std::ofstream file;
+                file.open(path);
+                if (!file.is_open()) {
+                    std::cerr << __PRETTY_FUNCTION__ << " : Cannot open file "
+                              << path << std::endl;
+                    return;
+                }
+
+                int nrows = get_size();
+                for(int i=0; i<nrows; i++) {
+                    int j=0;
+                    for(; j<_ncols-1; j++) {
+                        file << _data[j][i] << ",";
+                    }
+                    if (j < _ncols) {
+                        file << _data[j][i] << "\n";
+                    }
+                }
+                file.close();
+            }
+
         }}// end namespace data
 } // end namespace utils
 
@@ -272,3 +297,4 @@ typedef utils::data::server::data_frame_server::get_size_action get_size_action;
 HPX_REGISTER_ACTION(get_size_action);
 typedef utils::data::server::data_frame_server::get_row_action get_row_action;
 HPX_REGISTER_ACTION(get_row_action);
+HPX_REGISTER_ACTION(utils::data::server::data_frame_server::write_action);

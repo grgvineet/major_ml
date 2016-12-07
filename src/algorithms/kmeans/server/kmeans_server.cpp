@@ -98,6 +98,43 @@ namespace algo {
             void kmeans_server::kmeanspp_clear_state() {
                 _kmeanspp_dist.clear();
             }
+
+            void
+            kmeans_server::test(utils::data::data_frame labels, utils::data::data_frame data_frame,
+                                std::vector<std::vector<double>> points) {
+
+                utils::data::server::data_frame_server* test_data =
+                        reinterpret_cast<utils::data::server::data_frame_server*>(data_frame.get_local_ptr().get());
+
+                int ncols = test_data->get_ncols();
+                int nrows = test_data->get_size();
+
+                if (nrows == 0 || ncols == 0) {
+                    return;
+                }
+
+                std::vector<double> label_vec;
+                label_vec.reserve(nrows);
+
+                for(int i=0; i<nrows; i++) {
+                    double max_dist = DBL_MIN;
+                    double label;
+
+                    std::vector<double> row = test_data->get_row(i);
+
+                    for(int j=0; j<points.size(); j++) {
+                        double d = utils::math::euclid_square(row, points[j]);
+                        if (d > max_dist) {
+                            max_dist = d;
+                            label = j;
+                        }
+                    }
+                    label_vec.push_back(label);
+                }
+                utils::data::server::data_frame_server* labels_data_frame =
+                        reinterpret_cast<utils::data::server::data_frame_server*>(labels.get_local_ptr().get());
+                labels_data_frame->insert_column(label_vec, "labels");
+            }
         }
     }
 }
@@ -107,9 +144,8 @@ HPX_REGISTER_COMPONENT(kmeans_server_type, kmeans_server);
 
 // HPX_REGISTER_ACTION() exposes the component member function for remote
 // invocation.
-typedef algo::kmeans::server::kmeans_server::train_action train_action;
-HPX_REGISTER_ACTION(train_action);
-typedef algo::kmeans::server::kmeans_server::kmeanspp_action kmeanspp_action;
-HPX_REGISTER_ACTION(kmeanspp_action);
-typedef algo::kmeans::server::kmeans_server::kmeanspp_clear_state_action kmeanspp_clear_state_action;
-HPX_REGISTER_ACTION(kmeanspp_clear_state_action);
+HPX_REGISTER_ACTION(algo::kmeans::server::kmeans_server::train_action);
+HPX_REGISTER_ACTION(algo::kmeans::server::kmeans_server::test_action);
+HPX_REGISTER_ACTION(algo::kmeans::server::kmeans_server::kmeanspp_action);
+HPX_REGISTER_ACTION(algo::kmeans::server::kmeans_server::kmeanspp_clear_state_action);
+HPX_REGISTER_ACTION(algo::kmeans::server::kmeans_server::get_k_action);

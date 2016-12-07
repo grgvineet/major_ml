@@ -16,7 +16,7 @@ namespace utils {
 
     namespace data {
 
-        class data_frame : public hpx::components::client_base<data_frame, utils::data::server::data_frame_server>{
+        struct data_frame : public hpx::components::client_base<data_frame, utils::data::server::data_frame_server>{
 
             typedef utils::data::data_row data_row;
 
@@ -35,11 +35,11 @@ namespace utils {
                     : base_type(hpx::new_<server::data_frame_server>(where, path, header))
             {}
 
-            // Create a new component on the locality co-located to the id 'where'. The
-            // new instance will be initialized from the given partition_data.
-            data_frame(hpx::id_type where, int const& ncols)
-            : base_type(hpx::new_<server::data_frame_server>(hpx::colocated(where), ncols))
-            {}
+//            // Create a new component on the locality co-located to the id 'where'. The
+//            // new instance will be initialized from the given partition_data.
+//            data_frame(hpx::id_type where, int const& ncols)
+//            : base_type(hpx::new_<server::data_frame_server>(hpx::colocated(where), ncols))
+//            {}
 
             // Attach a future representing a (possibly remote) partition.
             data_frame(hpx::future<hpx::id_type> && id)
@@ -78,6 +78,11 @@ namespace utils {
             hpx::future<std::vector<double>> get_row(int index) {
                 utils::data::server::data_frame_server::get_row_action act;
                 return hpx::async(act, get_id(), index);
+            }
+
+            hpx::future<void> write(std::string path) {
+                utils::data::server::data_frame_server::write_action act;
+                return hpx::async(act, get_id(), path);
             }
 
         };

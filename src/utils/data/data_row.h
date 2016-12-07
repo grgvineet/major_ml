@@ -13,8 +13,9 @@ namespace utils {
 
     namespace data {
 
-        class data_row {
+        struct data_row {
 
+        private:
             int _ncols;
             std::vector<double> _data;
             std::map<std::string, int> _colnames_index;

@@ -61,6 +61,11 @@ namespace algo {
                 return hpx::async(act, get_id(), df, point);
             }
 
+            hpx::future<void> test(utils::data::data_frame labels, utils::data::data_frame df, std::vector<std::vector<double>> points) {
+                server::kmeans_server::test_action act;
+                return hpx::async(act, get_id(), labels, df, points);
+            }
+
             hpx::future<void> kmeanspp_clear_state() {
                 server::kmeans_server::kmeanspp_clear_state_action act;
                 return hpx::async(act, get_id());

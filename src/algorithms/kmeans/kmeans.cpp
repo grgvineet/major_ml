@@ -35,7 +35,9 @@ void algo::kmeans::kmeans::train(utils::data::big_data &training_data) {
     using namespace utils::data;
 
     // Initialise client for each node
-    std::vector<kmeans_client> clients;
+    if (!clients.empty()) {
+        while(!clients.empty()) clients.pop_back();
+    }
     clients.reserve(training_data.get_num_data_frames());
     for(int i=0; i<training_data.get_num_data_frames(); i++) {
         clients.push_back(kmeans_client(hpx::get_colocation_id(training_data.get_data_frame(i).get_id()).get(), _k, _max_iter, _seed));
@@ -121,5 +123,25 @@ void algo::kmeans::kmeans::train(utils::data::big_data &training_data) {
         }
         std::cout << std::endl;
     }
+}
+
+utils::data::big_data algo::kmeans::kmeans::test(utils::data::big_data &test_data) {
+    using namespace utils::data;
+
+    if (clients.empty()) {
+        std::cerr << "Not yet trained, labels not generated" << std::endl;
+        return big_data();
+    }
+
+    std::vector<utils::data::data_frame> label_frames;
+    std::vector<hpx::future<void>> fut;
+    for(int i=0; i<clients.size(); i++) {
+        utils::data::data_frame labels(hpx::get_colocation_id(clients[i].get_id()).get(), 0);
+        fut.push_back(clients[i].test(labels, test_data.get_data_frame(i), _points));
+        label_frames.push_back(labels);
+    }
+    hpx::wait_all(fut);
+
+    return big_data(std::move(label_frames));
 }
 

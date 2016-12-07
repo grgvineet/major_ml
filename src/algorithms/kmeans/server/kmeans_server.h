@@ -32,6 +32,9 @@ namespace algo {
                 std::vector<std::vector<double>>
                 train(utils::data::data_frame data_frame, std::vector<std::vector<double>> points);
 
+                void
+                test(utils::data::data_frame labels, utils::data::data_frame data_frame, std::vector<std::vector<double>> points);
+
                 void kmeanspp_clear_state(); // Don't think it is required, but still!!
                 std::vector<double> kmeanspp(utils::data::data_frame data_frame, std::vector<double> points);
                 // Every member function which has to be invoked remotely needs to be
@@ -39,6 +42,7 @@ namespace algo {
                 // 'get_data_action' which represents the (possibly remote) member function
                 // partition::get_data().
                 HPX_DEFINE_COMPONENT_DIRECT_ACTION(kmeans_server, train, train_action);
+                HPX_DEFINE_COMPONENT_DIRECT_ACTION(kmeans_server, test, test_action);
                 HPX_DEFINE_COMPONENT_DIRECT_ACTION(kmeans_server, kmeanspp_clear_state, kmeanspp_clear_state_action);
                 HPX_DEFINE_COMPONENT_DIRECT_ACTION(kmeans_server, kmeanspp, kmeanspp_action);
                 HPX_DEFINE_COMPONENT_DIRECT_ACTION(kmeans_server, get_k, get_k_action);

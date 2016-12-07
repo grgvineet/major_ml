@@ -9,6 +9,7 @@
 #include "utils/data/big_data.h"
 
 #include "server/kmeans_server.h"
+#include "kmeans_client.h"
 
 namespace algo {
 
@@ -18,6 +19,7 @@ namespace algo {
         private:
             int _k; // K for kmeans_server
             int _max_iter;
+            std::vector<kmeans_client> clients;
             std::vector<std::vector<double>> _points;
 
         public:
@@ -29,7 +31,7 @@ namespace algo {
             configure_args(int argc, char **argv);
 
             void train(utils::data::big_data &training_data);
-//        std::vector<int> test(data_frame* test_data);
+            utils::data::big_data test(utils::data::big_data &test_data);
 
         };
     }

@@ -12,6 +12,25 @@ namespace utils {
 
         }
 
+        big_data::big_data(std::vector<data_frame> &df) {
+            _data_frames = df;
+        }
+
+        big_data::big_data(std::vector<data_frame> &&df) {
+            _data_frames = df;
+        }
+
+        big_data::big_data(int ncols) {
+            std::vector<hpx::naming::id_type> localities = hpx::find_all_localities();
+            _data_frames.reserve(localities.size());
+            for(int i=0; i<localities.size(); i++) {
+                _data_frames.push_back(data_frame(localities[i], ncols));
+                if (localities[i] == hpx::find_here()) {
+                    _this_data_frame_index = i;
+                }
+            }
+        }
+
         big_data::big_data(const std::string &path, const bool header) {
             read_data(path, header);
         }
@@ -64,6 +83,15 @@ namespace utils {
                 return _data_frames[0];
             }
             return _data_frames[_this_data_frame_index];
+        }
+
+        void big_data::write(std::string filename) {
+            std::vector<hpx::future<void>> f;
+            f.reserve(_data_frames.size());
+            for(int i=0; i<_data_frames.size(); i++) {
+                f.push_back(_data_frames[i].write(filename));
+            }
+            hpx::wait_all(f);
         }
     }
 }

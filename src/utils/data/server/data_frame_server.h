@@ -53,6 +53,8 @@ namespace utils {
 
             int get_nrows_from_file(std::string& path, bool header = false);
 
+            void write(std::string path);
+
             ///////////////////////////////////////////////////////////////////////
             // Every member function which has to be invoked remotely needs to be
             // wrapped into a component action. The macro below defines a new type
@@ -64,6 +66,7 @@ namespace utils {
             HPX_DEFINE_COMPONENT_DIRECT_ACTION(data_frame_server, print, print_action);
             HPX_DEFINE_COMPONENT_DIRECT_ACTION(data_frame_server, get_size, get_size_action);
             HPX_DEFINE_COMPONENT_DIRECT_ACTION(data_frame_server, get_row, get_row_action);
+            HPX_DEFINE_COMPONENT_DIRECT_ACTION(data_frame_server, write, write_action);
 
         private:
 

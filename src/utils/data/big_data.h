@@ -14,7 +14,10 @@ namespace utils {
         struct big_data {
 
             big_data();
+            big_data(int ncols);
             big_data(const std::string& path, const bool header = false);
+            big_data(std::vector<data_frame>& df);
+            big_data(std::vector<data_frame>&& df);
 
             void read_data(const std::string& path, const bool header = false);
 
@@ -24,6 +27,7 @@ namespace utils {
 
             data_frame& get_this_data_frame(); // return data_frame on this locality
 
+            void write(std::string filename);
             // TODO :: Add method to apply an action
 
         private:
