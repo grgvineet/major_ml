@@ -93,5 +93,13 @@ namespace utils {
             }
             hpx::wait_all(f);
         }
+
+        void big_data::add_data_frame(utils::data::data_frame &df) {
+            _data_frames.push_back(df);
+        }
+
+        void big_data::set_this_data_frame_index(int index) {
+            _this_data_frame_index = index;
+        }
     }
 }

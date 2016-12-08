@@ -30,7 +30,7 @@ namespace algo {
                 }
 
                 std::vector<std::vector<double>>
-                train(utils::data::data_frame data_frame, std::vector<std::vector<double>> points);
+                train(utils::data::data_frame data_frame, utils::data::data_frame clusters, std::vector<std::vector<double>> points);
 
                 void
                 test(utils::data::data_frame labels, utils::data::data_frame data_frame, std::vector<std::vector<double>> points);
@@ -43,7 +43,6 @@ namespace algo {
                 // partition::get_data().
                 HPX_DEFINE_COMPONENT_DIRECT_ACTION(kmeans_server, train, train_action);
                 HPX_DEFINE_COMPONENT_DIRECT_ACTION(kmeans_server, test, test_action);
-                HPX_DEFINE_COMPONENT_DIRECT_ACTION(kmeans_server, kmeanspp_clear_state, kmeanspp_clear_state_action);
                 HPX_DEFINE_COMPONENT_DIRECT_ACTION(kmeans_server, kmeanspp, kmeanspp_action);
                 HPX_DEFINE_COMPONENT_DIRECT_ACTION(kmeans_server, get_k, get_k_action);
 

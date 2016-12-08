@@ -37,6 +37,8 @@ namespace utils {
             bool insert_column(std::vector<double>& col, std::string colname);
             bool remove_column(const int index);
             bool remove_column(const std::string& colname);
+            bool replace_column(std::vector<double> &col, int index);
+            bool replace_column(std::vector<double> &col, std::string &colname);
 
             std::vector<double> get_row(int index);
 
@@ -44,6 +46,7 @@ namespace utils {
             data_row operator[](const std::string& colname);
 
             std::vector<double>& get_column(int index);
+            std::vector<std::string>& get_colnames() { return _colnames; }
 
 
             int get_size() const;

@@ -25,6 +25,10 @@ namespace utils {
             int get_num_data_frames() const;
             data_frame& get_data_frame(int index);
 
+            void add_data_frame(utils::data::data_frame& df);
+            void set_this_data_frame_index(int index);
+            int get_this_data_frame_index() { return _this_data_frame_index; }
+
             data_frame& get_this_data_frame(); // return data_frame on this locality
 
             void write(std::string filename);

@@ -7,6 +7,7 @@
 algo::algo_base::algo_base(int seed) {
     _seed = seed;
     std::srand(seed);
+    std::cerr << "Seed is " << _seed << std::endl;
 }
 
 boost::program_options::options_description

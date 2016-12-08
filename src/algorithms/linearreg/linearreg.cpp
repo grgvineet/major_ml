@@ -14,8 +14,6 @@ namespace algo {
 
         linearreg::linearreg(int seed) : algo::algo_base(seed){
             _name = "linearreg";
-
-            std::cerr << "Seed is " << _seed << std::endl;
         }
 
         linearreg::~linearreg() {

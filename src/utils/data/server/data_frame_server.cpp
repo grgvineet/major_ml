@@ -168,8 +168,27 @@ namespace utils {
             if (_colnames_index.find(colname) == _colnames_index.end()) {
                 std::cerr << __PRETTY_FUNCTION__ << " : Invalid column name specified("
                           << colname << ")"<< std::endl;
+                return false;
             }
             return remove_column(_colnames_index[colname]);
+        }
+
+        bool data_frame_server::replace_column(std::vector<double> &col, int index) {
+            if (index < 0 || index >= _ncols) {
+                std::cerr << __PRETTY_FUNCTION__ << " : Index " << index
+                          << " out of bound"<< std::endl;
+                return false;
+            }
+            _data[index] = col;
+            return true;
+        }
+
+        bool data_frame_server::replace_column(std::vector<double> &col, std::string &colname) {
+            if (_colnames_index.find(colname) == _colnames_index.end()) {
+                return insert_column(col, colname);
+            }
+            _data[_colnames_index[colname]] = col;
+            return true;
         }
 
         utils::data::data_row data_frame_server::operator[](int index) {

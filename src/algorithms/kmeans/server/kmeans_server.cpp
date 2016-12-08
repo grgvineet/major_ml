@@ -14,9 +14,15 @@ namespace algo {
         namespace server {
 
             std::vector<std::vector<double>>
-            kmeans_server::train(utils::data::data_frame data_frame, std::vector<std::vector<double>> points) {
+            kmeans_server::train(utils::data::data_frame data_frame, utils::data::data_frame clusters,
+                                 std::vector<std::vector<double>> points) {
+
+                // TODO : Optimise these two gets using dataflow
                 utils::data::server::data_frame_server* _data_frame =
                         reinterpret_cast<utils::data::server::data_frame_server*>(data_frame.get_local_ptr().get());
+                utils::data::server::data_frame_server* _cluster_frame =
+                        reinterpret_cast<utils::data::server::data_frame_server*>(clusters.get_local_ptr().get());
+
                 int nrows = _data_frame->get_size();
                 int ncols = _data_frame->get_ncols();
 
@@ -27,6 +33,9 @@ namespace algo {
                 }
 
                 std::vector<std::vector<double>> res = std::vector<std::vector<double>>(points.size(), std::vector<double>(ncols+1, 0));
+
+                std::vector<double> cluster_vec;
+                cluster_vec.reserve(nrows);
 
                 for(int i=0; i<nrows; i++) {
                     // FIXME : Optimise this, as data frame resides on this locality the following can be optimised,
@@ -42,12 +51,15 @@ namespace algo {
                             min_index = j;
                         }
                     }
+                    cluster_vec.push_back(min_index);
                     int data_row_size = data_row.size();
                     for(int j=0; j<data_row_size; j++) {
                         res[min_index][j] += data_row[j];
                     }
                     res[min_index].back()++;
                 }
+                std::string colname("cluster");
+                _cluster_frame->replace_column(cluster_vec, colname);
                 return res;
             }
 
@@ -93,10 +105,6 @@ namespace algo {
                 // Piggybacking max distance at farthest point
                 farthest_point.push_back(max_distance);
                 return farthest_point;
-            }
-
-            void kmeans_server::kmeanspp_clear_state() {
-                _kmeanspp_dist.clear();
             }
 
             void
@@ -147,5 +155,4 @@ HPX_REGISTER_COMPONENT(kmeans_server_type, kmeans_server);
 HPX_REGISTER_ACTION(algo::kmeans::server::kmeans_server::train_action);
 HPX_REGISTER_ACTION(algo::kmeans::server::kmeans_server::test_action);
 HPX_REGISTER_ACTION(algo::kmeans::server::kmeans_server::kmeanspp_action);
-HPX_REGISTER_ACTION(algo::kmeans::server::kmeans_server::kmeanspp_clear_state_action);
 HPX_REGISTER_ACTION(algo::kmeans::server::kmeans_server::get_k_action);
