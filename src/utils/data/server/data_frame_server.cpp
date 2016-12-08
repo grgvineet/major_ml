@@ -282,14 +282,24 @@ namespace utils {
                 }
 
                 int nrows = get_size();
+                int ncols = get_ncols();
+
+                if (ncols <= 0) {
+                    file.close();
+                    return;
+                }
+                file << _colnames[0];
+                for(int i=1; i<_colnames.size(); i++) {
+                    file << "," << _colnames[i];
+                }
+                file << "\n";
+
                 for(int i=0; i<nrows; i++) {
-                    int j=0;
-                    for(; j<_ncols-1; j++) {
-                        file << _data[j][i] << ",";
+                    file << _data[0][i];
+                    for(int j=1; j<_ncols; j++) {
+                        file << "," << _data[j][i];
                     }
-                    if (j < _ncols) {
-                        file << _data[j][i] << "\n";
-                    }
+                    file << "\n";
                 }
                 file.close();
             }

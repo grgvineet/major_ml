@@ -30,6 +30,9 @@ namespace algo {
                 std::vector<double>
                 calculate_x_trans_y(utils::data::data_frame data_frame, int label_col);
 
+                void post_training_computation(utils::data::data_frame data_frame, utils::data::data_frame out_frame,
+                                                std::vector<double> coefficients, int bias_index);
+
                 void
                 test(utils::data::data_frame labels, utils::data::data_frame data_frame, std::vector<double> theta, int _bias_index);
 
@@ -39,6 +42,7 @@ namespace algo {
                 // partition::get_data().
                 HPX_DEFINE_COMPONENT_DIRECT_ACTION(linearreg_server, calculate_x_trans_x, calculate_x_trans_x_action);
                 HPX_DEFINE_COMPONENT_DIRECT_ACTION(linearreg_server, calculate_x_trans_y, calculate_x_trans_y_action);
+                HPX_DEFINE_COMPONENT_DIRECT_ACTION(linearreg_server, post_training_computation, post_training_computation_action);
                 HPX_DEFINE_COMPONENT_DIRECT_ACTION(linearreg_server, test, test_action);
 
             private:

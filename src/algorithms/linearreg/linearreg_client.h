@@ -55,6 +55,12 @@ namespace algo {
                 return hpx::async(act, get_id(), df, label_col);
             }
 
+            hpx::future<void> post_training_computation(utils::data::data_frame data_frame, utils::data::data_frame out_frame,
+                                           std::vector<double> coefficients, int bias_index) {
+                server::linearreg_server::post_training_computation_action act;
+                return hpx::async(act, get_id(), data_frame, out_frame, coefficients, bias_index);
+            }
+
             hpx::future<void> test(utils::data::data_frame labels, utils::data::data_frame df, std::vector<double> theta, int bias_index) {
                 server::linearreg_server::test_action act;
                 return hpx::async(act, get_id(), labels, df, theta, bias_index);

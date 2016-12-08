@@ -34,10 +34,15 @@ namespace algo {
 
             int num_localities = training_data.get_num_data_frames();
             // Initialise client for each node
-            clients.reserve(num_localities);
+
+            _clients.reserve(training_data.get_num_data_frames());
             for(int i=0; i<training_data.get_num_data_frames(); i++) {
-                clients.push_back(linearreg_client(hpx::get_colocation_id(training_data.get_data_frame(i).get_id()).get(), _seed));
+                hpx::id_type loc_id = hpx::get_colocation_id(hpx::launch::sync, training_data.get_data_frame(i).get_id());
+                utils::data::data_frame df(loc_id, 0);
+                _train_out.add_data_frame(df);
+                _clients.push_back(linearreg_client(loc_id, _seed));
             }
+            _train_out.set_this_data_frame_index(training_data.get_this_data_frame_index());
 
             // Fetch details about data from data frame on this locality for faster computation
             data_frame this_df = training_data.get_this_data_frame();
@@ -47,7 +52,7 @@ namespace algo {
             std::vector<hpx::future<std::vector<std::vector<double>>>> x_trans_x_fut;
             x_trans_x_fut.reserve(num_localities);
             for(int i=0; i<num_localities; i++) {
-                x_trans_x_fut.push_back(clients[i].calculate_x_trans_x(training_data.get_data_frame(i), label_col));
+                x_trans_x_fut.push_back(_clients[i].calculate_x_trans_x(training_data.get_data_frame(i), label_col));
             }
             hpx::wait_all(x_trans_x_fut);
 
@@ -71,7 +76,7 @@ namespace algo {
             std::vector<hpx::future<std::vector<double>>> x_trans_y_fut;
             x_trans_y_fut.reserve(num_localities);
             for(int i=0; i<num_localities; i++) {
-                x_trans_y_fut.push_back(clients[i].calculate_x_trans_y(training_data.get_data_frame(i), label_col));
+                x_trans_y_fut.push_back(_clients[i].calculate_x_trans_y(training_data.get_data_frame(i), label_col));
             }
             hpx::wait_all(x_trans_y_fut);
 
@@ -99,6 +104,11 @@ namespace algo {
             for(int i=0; i<_theta.size(); i++) {
                 std::cerr << _theta[i] << std::endl;
             }
+
+
+            // Do post coefficient determination computation
+            // This calculates residues and fitted values
+            post_training_computation(training_data);
         }
 
         void linearreg::train(utils::data::big_data &training_data, std::string label_colname) {
@@ -107,19 +117,33 @@ namespace algo {
             train(training_data, label_col);
         }
 
+        void linearreg::post_training_computation(utils::data::big_data &training_data) {
+
+            int clients_size = _clients.size();
+            std::vector<hpx::future<void>> fut;
+            fut.reserve(clients_size);
+            for(int i=0; i<clients_size; i++) {
+                fut.push_back(_clients[i].post_training_computation(training_data.get_data_frame(i)
+                                                                    , _train_out.get_data_frame(i)
+                                                                    , _theta
+                                                                    , _bias_index));
+            }
+            hpx::wait_all(fut);
+        }
+
         utils::data::big_data linearreg::test(utils::data::big_data test_data) {
             using namespace utils::data;
 
-            if (clients.empty()) {
+            if (_clients.empty()) {
                 std::cerr << "Not yet trained, labels not generated" << std::endl;
                 return big_data();
             }
 
             std::vector<utils::data::data_frame> label_frames;
             std::vector<hpx::future<void>> fut;
-            for(int i=0; i<clients.size(); i++) {
-                utils::data::data_frame labels(hpx::get_colocation_id(clients[i].get_id()).get(), 0);
-                fut.push_back(clients[i].test(labels, test_data.get_data_frame(i), _theta, _bias_index));
+            for(int i=0; i<_clients.size(); i++) {
+                utils::data::data_frame labels(hpx::get_colocation_id(_clients[i].get_id()).get(), 0);
+                fut.push_back(_clients[i].test(labels, test_data.get_data_frame(i), _theta, _bias_index));
                 label_frames.push_back(labels);
             }
             hpx::wait_all(fut);

@@ -123,6 +123,40 @@ namespace algo {
                 }
                 labels_data->insert_column(labels_value, "labels");
             }
+
+            void linearreg_server::post_training_computation(utils::data::data_frame train_frame,
+                                                             utils::data::data_frame out_frame,
+                                                             std::vector<double> coefficients, int bias_index) {
+
+                utils::data::server::data_frame_server* train_data =
+                        reinterpret_cast<utils::data::server::data_frame_server*>(train_frame.get_local_ptr().get());
+
+                utils::data::server::data_frame_server* out_data =
+                        reinterpret_cast<utils::data::server::data_frame_server*>(out_frame.get_local_ptr().get());
+
+                int nrows = train_data->get_size();
+                int ncols = train_data->get_ncols();
+
+                std::vector<double> fitted_val, residual;
+                fitted_val.reserve(nrows);
+                residual.reserve(nrows);
+
+                for(int i=0; i<nrows; i++) {
+                    double val = 0;
+                    std::vector<double> row = train_data->get_row(i);
+                    for(int j=0; j<ncols; j++) {
+                        if (j == bias_index) {
+                            val += coefficients[j];
+                            continue;
+                        }
+                        val += row[j]*coefficients[j];
+                    }
+                    fitted_val.push_back(val);
+                    residual.push_back(row[bias_index]-val);
+                }
+                out_data->insert_column(fitted_val, "fitted_value");
+                out_data->insert_column(residual, "residuals");
+            }
         }
     }
 }
@@ -134,5 +168,6 @@ HPX_REGISTER_COMPONENT(linearreg_server_type, linearreg_server);
 // invocation.
 HPX_REGISTER_ACTION(algo::linearreg::server::linearreg_server::calculate_x_trans_x_action);
 HPX_REGISTER_ACTION(algo::linearreg::server::linearreg_server::calculate_x_trans_y_action);
+HPX_REGISTER_ACTION(algo::linearreg::server::linearreg_server::post_training_computation_action);
 HPX_REGISTER_ACTION(algo::linearreg::server::linearreg_server::test_action);
 
