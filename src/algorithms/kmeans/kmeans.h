@@ -8,7 +8,6 @@
 #include "algorithms/algo_base.h"
 #include "utils/data/big_data.h"
 
-#include "server/kmeans_server.h"
 #include "kmeans_client.h"
 
 namespace algo {

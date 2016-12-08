@@ -55,9 +55,9 @@ namespace algo {
                 return hpx::async(act, get_id(), df, label_col);
             }
 
-            hpx::future<void> store_data_frame_pointer(utils::data::data_frame df) {
-                server::linearreg_server::store_data_frame_pointer_action act;
-                return hpx::async(act, get_id(), df);
+            hpx::future<void> test(utils::data::data_frame labels, utils::data::data_frame df, std::vector<double> theta, int bias_index) {
+                server::linearreg_server::test_action act;
+                return hpx::async(act, get_id(), labels, df, theta, bias_index);
             }
 
         };

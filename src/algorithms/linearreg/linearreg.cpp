@@ -32,13 +32,13 @@ namespace algo {
         void linearreg::train(utils::data::big_data &training_data, int label_col) {
             using namespace utils::data;
 
+            // TODO : Check is label_col valid
+
             int num_localities = training_data.get_num_data_frames();
             // Initialise client for each node
-            std::vector<linearreg_client> clients;
             clients.reserve(num_localities);
             for(int i=0; i<training_data.get_num_data_frames(); i++) {
                 clients.push_back(linearreg_client(hpx::get_colocation_id(training_data.get_data_frame(i).get_id()).get(), _seed));
-                clients[i].store_data_frame_pointer(training_data.get_data_frame(i)).get();
             }
 
             // Fetch details about data from data frame on this locality for faster computation
@@ -96,6 +96,7 @@ namespace algo {
                 result[i] = temp;
             }
             _theta = std::move(result);
+            _bias_index = label_col;
             std::cerr << "================ Beta ===================" << std::endl;
             for(int i=0; i<_theta.size(); i++) {
                 std::cerr << _theta[i] << std::endl;
@@ -106,6 +107,26 @@ namespace algo {
             int label_col = 0;
             // TODO : Fetch label_col from label_calname
             train(training_data, label_col);
+        }
+
+        utils::data::big_data linearreg::test(utils::data::big_data test_data) {
+            using namespace utils::data;
+
+            if (clients.empty()) {
+                std::cerr << "Not yet trained, labels not generated" << std::endl;
+                return big_data();
+            }
+
+            std::vector<utils::data::data_frame> label_frames;
+            std::vector<hpx::future<void>> fut;
+            for(int i=0; i<clients.size(); i++) {
+                utils::data::data_frame labels(hpx::get_colocation_id(clients[i].get_id()).get(), 0);
+                fut.push_back(clients[i].test(labels, test_data.get_data_frame(i), _theta, _bias_index));
+                label_frames.push_back(labels);
+            }
+            hpx::wait_all(fut);
+
+            return big_data(std::move(label_frames));
         }
 
     }

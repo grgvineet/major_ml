@@ -8,7 +8,7 @@
 #include "algorithms/algo_base.h"
 #include "utils/data/big_data.h"
 
-#include "algorithms/linearreg/server/linearreg_server.h"
+#include "linearreg_client.h"
 
 namespace algo {
 
@@ -18,7 +18,11 @@ namespace algo {
         private:
             int label_col;
             std::string label_colname;
+
             std::vector<double> _theta;
+            int _bias_index;
+
+            std::vector<linearreg_client> clients;
 
         public:
             linearreg(int seed = std::rand());
@@ -30,8 +34,8 @@ namespace algo {
 
             void train(utils::data::big_data &training_data, int label_col);
             void train(utils::data::big_data &training_data, std::string label_colname);
-//        std::vector<int> test(data_frame* test_data);
 
+            utils::data::big_data test(utils::data::big_data test_data);
         };
     }
 }

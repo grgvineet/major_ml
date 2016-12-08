@@ -15,6 +15,10 @@ namespace algo {
 
             std::vector<std::vector<double>>
             linearreg_server::calculate_x_trans_x(utils::data::data_frame data_frame, int label_col) {
+
+                utils::data::server::data_frame_server* _data_frame =
+                        reinterpret_cast<utils::data::server::data_frame_server*>(data_frame.get_local_ptr().get());
+
                 int nrows = _data_frame->get_size();
                 int ncols = _data_frame->get_ncols();
 
@@ -52,6 +56,10 @@ namespace algo {
 
             std::vector<double>
             linearreg_server::calculate_x_trans_y(utils::data::data_frame data_frame, int label_col) {
+
+                utils::data::server::data_frame_server* _data_frame =
+                        reinterpret_cast<utils::data::server::data_frame_server*>(data_frame.get_local_ptr().get());
+
                 int nrows = _data_frame->get_size();
                 int ncols = _data_frame->get_ncols();
 
@@ -80,10 +88,40 @@ namespace algo {
                 return res;
             }
 
-            void linearreg_server::store_data_frame_pointer(utils::data::data_frame data_frame) {
-                _data_frame =
-                        hpx::get_ptr<utils::data::server::data_frame_server>(data_frame.get_gid()).get();
+            void linearreg_server::test(utils::data::data_frame labels, utils::data::data_frame data_frame,
+                                        std::vector<double> theta, int bias_index) {
 
+                utils::data::server::data_frame_server* test_data =
+                        reinterpret_cast<utils::data::server::data_frame_server*>(data_frame.get_local_ptr().get());
+
+                utils::data::server::data_frame_server* labels_data =
+                        reinterpret_cast<utils::data::server::data_frame_server*>(labels.get_local_ptr().get());
+
+                int nrows = test_data->get_size();
+                int ncols = test_data->get_ncols();
+
+                std::vector<double> labels_value;
+                labels_value.reserve(nrows);
+
+//                if (ncols != theta.size()-1) {
+//                    // FIXME : For now we assume that at columns will be used in training, but it might be not the case
+//                    return;
+//                }
+
+                for(int i=0; i<nrows; i++) {
+                    std::vector<double> row = test_data->get_row(i);
+                    double val = 0;
+                    for(int j=0, k=0; j<theta.size(); j++) {
+                        if (j == bias_index) {
+                            val += theta[j];
+                            continue;
+                        }
+                        val += row[j]*theta[k];
+                        k++;
+                    }
+                    labels_value.push_back(val);
+                }
+                labels_data->insert_column(labels_value, "labels");
             }
         }
     }
@@ -98,5 +136,5 @@ typedef algo::linearreg::server::linearreg_server::calculate_x_trans_x_action ca
 HPX_REGISTER_ACTION(calculate_x_trans_x_action);
 typedef algo::linearreg::server::linearreg_server::calculate_x_trans_y_action calculate_x_trans_y_action;
 HPX_REGISTER_ACTION(calculate_x_trans_y_action);
-typedef algo::linearreg::server::linearreg_server::store_data_frame_pointer_action store_data_frame_pointer_action;
-HPX_REGISTER_ACTION(store_data_frame_pointer_action);
+HPX_REGISTER_ACTION(algo::linearreg::server::linearreg_server::test_action);
+
