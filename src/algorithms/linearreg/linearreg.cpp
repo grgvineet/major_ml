@@ -2,6 +2,7 @@
 // Created by vineet on 31/10/16.
 //
 
+#include "armadillo"
 #include "linearreg.h"
 #include "linearreg_client.h"
 
@@ -57,20 +58,16 @@ namespace algo {
             hpx::wait_all(x_trans_x_fut);
 
             // Calculate x_trans_x by summing results from all the localities
-            std::vector<std::vector<double>> x_trans_x(ncols, std::vector<double>(ncols, 0));
+
+            arma::mat x_trans_x(ncols, ncols, arma::fill::zeros);
             for(int k=0; k<num_localities; k++) {
                 std::vector<std::vector<double>> locality_res(x_trans_x_fut[k].get());
                 for(int i=0; i<ncols; i++) {
                     for(int j=0; j<ncols; j++) {
-                        x_trans_x[i][j] += locality_res[i][j];
+                        x_trans_x(i,j) += locality_res[i][j];
                     }
                 }
             }
-
-            // Take inverse of x_trans_x
-            std::vector<std::vector<double>> inverse(ncols, std::vector<double>(ncols, 0));
-            utils::math::inverse(x_trans_x, inverse);
-            // TODO : Check if false returned
 
             // Compute x_trans_y on all localities
             std::vector<hpx::future<std::vector<double>>> x_trans_y_fut;
@@ -81,22 +78,19 @@ namespace algo {
             hpx::wait_all(x_trans_y_fut);
 
             // Calculate x_trans_y from locality result
-            std::vector<double> x_trans_y(ncols, 0);
+            arma::vec x_trans_y(ncols, arma::fill::zeros);
             for (int j=0; j<num_localities; j++) {
                 std::vector<double> locality_res(x_trans_y_fut[j].get());
                 for(int i=0; i<ncols; i++) {
-                    x_trans_y[i] += locality_res[i];
+                    x_trans_y(i) += locality_res[i];
                 }
             }
 
-            // Multiply x_trans_x * x_trans_y
+            arma::vec coefficients = arma::solve(x_trans_x, x_trans_y);
+
             std::vector<double> result(ncols, 0);
             for(int i=0; i<ncols; i++) {
-                double temp = 0;
-                for(int j=0; j<ncols; j++) {
-                    temp += inverse[i][j] * x_trans_y[j];
-                }
-                result[i] = temp;
+                result[i] = coefficients(i);
             }
             _theta = std::move(result);
             _bias_index = label_col;
