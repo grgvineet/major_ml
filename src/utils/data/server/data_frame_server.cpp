@@ -304,16 +304,10 @@ HPX_REGISTER_COMPONENT(data_frame_server_type, data_frame_server);
 
 // HPX_REGISTER_ACTION() exposes the component member function for remote
 // invocation.
-typedef utils::data::server::data_frame_server::get_local_ptr_action get_local_ptr_action;
-HPX_REGISTER_ACTION(get_local_ptr_action);
-typedef utils::data::server::data_frame_server::get_ncols_action get_ncols_action;
-HPX_REGISTER_ACTION(get_ncols_action);
-typedef utils::data::server::data_frame_server::remove_row_action remove_row_action;
-HPX_REGISTER_ACTION(remove_row_action);
-typedef utils::data::server::data_frame_server::print_action print_action;
-HPX_REGISTER_ACTION(print_action);
-typedef utils::data::server::data_frame_server::get_size_action get_size_action;
-HPX_REGISTER_ACTION(get_size_action);
-typedef utils::data::server::data_frame_server::get_row_action get_row_action;
-HPX_REGISTER_ACTION(get_row_action);
+HPX_REGISTER_ACTION(utils::data::server::data_frame_server::get_local_ptr_action);
+HPX_REGISTER_ACTION(utils::data::server::data_frame_server::get_ncols_action);
+HPX_REGISTER_ACTION(utils::data::server::data_frame_server::remove_row_action);
+HPX_REGISTER_ACTION(utils::data::server::data_frame_server::print_action);
+HPX_REGISTER_ACTION(utils::data::server::data_frame_server::get_size_action);
+HPX_REGISTER_ACTION(utils::data::server::data_frame_server::get_row_action);
 HPX_REGISTER_ACTION(utils::data::server::data_frame_server::write_action);

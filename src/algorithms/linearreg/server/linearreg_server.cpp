@@ -132,9 +132,7 @@ HPX_REGISTER_COMPONENT(linearreg_server_type, linearreg_server);
 
 // HPX_REGISTER_ACTION() exposes the component member function for remote
 // invocation.
-typedef algo::linearreg::server::linearreg_server::calculate_x_trans_x_action calculate_x_trans_x_action;
-HPX_REGISTER_ACTION(calculate_x_trans_x_action);
-typedef algo::linearreg::server::linearreg_server::calculate_x_trans_y_action calculate_x_trans_y_action;
-HPX_REGISTER_ACTION(calculate_x_trans_y_action);
+HPX_REGISTER_ACTION(algo::linearreg::server::linearreg_server::calculate_x_trans_x_action);
+HPX_REGISTER_ACTION(algo::linearreg::server::linearreg_server::calculate_x_trans_y_action);
 HPX_REGISTER_ACTION(algo::linearreg::server::linearreg_server::test_action);
 
