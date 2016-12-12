@@ -11,10 +11,15 @@
 
 int hpx_main(boost::program_options::variables_map& vm)
 {
-    utils::data::big_data bg("cat_data.csv", false);
+    utils::data::big_data bg("sample.csv", false);
     std::cerr << bg.get_size() << std::endl;
-    algo::kmeans::kmeans kmeans(3, 12);
-    kmeans.train(bg);
+    hpx::util::high_resolution_timer t;
+    algo::kmeans::kmeans kmeans(bg, 5, 25);
+    std::cout << "Time taken : " << t.elapsed() << std::endl;
+    std::cout << "Iterations done :" << kmeans.iter() << std::endl;
+    kmeans.print_cluster_centers();
+
+    kmeans.clusters().write("clusters.csv");
     return hpx::finalize();
 }
 

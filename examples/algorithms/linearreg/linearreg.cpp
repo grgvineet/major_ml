@@ -11,10 +11,17 @@
 
 int hpx_main(boost::program_options::variables_map& vm)
 {
-    utils::data::big_data bg("million.csv", false);
+
+    utils::data::big_data bg("sample.csv", false);
     std::cerr << bg.get_size() << std::endl;
+
     algo::linearreg::linearreg linearreg;
-    linearreg.train(bg, 1); // 0 based indexing
+    linearreg.train(bg, 10);
+    linearreg.training_output().write("linear_out.csv");
+//
+//    utils::data::big_data test("testds.csv", false);
+//    utils::data::big_data labels = linearreg.test(test);
+//    labels.write("labels.csv");
     return hpx::finalize();
 }
 
