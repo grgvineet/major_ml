@@ -24,11 +24,14 @@ namespace utils {
             std::vector<hpx::naming::id_type> localities = hpx::find_all_localities();
             _data_frames.reserve(localities.size());
             for(int i=0; i<localities.size(); i++) {
-                _data_frames.push_back(data_frame(localities[i], ncols));
                 if (localities[i] == hpx::find_here()) {
-                    _this_data_frame_index = i;
+//                    _this_data_frame_index = i;
+                    continue;
                 }
+                _data_frames.push_back(data_frame(localities[i], ncols));
             }
+            _data_frames.push_back(data_frame(hpx::find_here(), ncols));
+            _this_data_frame_index = _data_frames.size() - 1;
         }
 
         big_data::big_data(const std::string &path, const bool header) {
@@ -39,11 +42,15 @@ namespace utils {
             std::vector<hpx::naming::id_type> localities = hpx::find_all_localities();
             _data_frames.reserve(localities.size());
             for(int i=0; i<localities.size(); i++) {
-                _data_frames.push_back(data_frame(localities[i], path, header));
                 if (localities[i] == hpx::find_here()) {
-                    _this_data_frame_index = i;
+//                    _this_data_frame_index = i;
+                    continue;
                 }
+                _data_frames.push_back(data_frame(localities[i], path, header));
+
             }
+            _data_frames.push_back(data_frame(hpx::find_here(), path, header));
+            _this_data_frame_index = _data_frames.size()-1;
         }
 
         int big_data::get_size() {

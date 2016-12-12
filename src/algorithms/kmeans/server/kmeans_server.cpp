@@ -82,8 +82,8 @@ namespace algo {
                 }
 
                 if (_kmeanspp_dist.empty()) {
-                    // Should initialise _kmeanspp_dist with zero
-                    _kmeanspp_dist.reserve(nrows);
+                    // Intantiate _kmeanspp_dist for kmeans++
+                    _kmeanspp_dist = std::vector<double>(nrows, DBL_MAX);
                 }
 
                 double max_distance = DBL_MIN;
@@ -95,7 +95,7 @@ namespace algo {
 //                    std::vector<double> this_row = data_frame.get_row(i).get();
                     std::vector<double> this_row(_data_frame->get_row(i));
                     double dist = utils::math::euclid_square(this_row, point);
-                    _kmeanspp_dist[i] += dist;
+                    _kmeanspp_dist[i] = std::min(_kmeanspp_dist[i], dist);
                     if (_kmeanspp_dist[i] > max_distance) {
                         max_distance = _kmeanspp_dist[i];
                         farthest_point = std::move(this_row);

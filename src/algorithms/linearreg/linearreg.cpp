@@ -32,7 +32,7 @@ namespace algo {
             using namespace utils::data;
 
             // TODO : Check is label_col valid
-
+            hpx::util::high_resolution_timer tim;
             int num_localities = training_data.get_num_data_frames();
             // Initialise client for each node
 
@@ -103,6 +103,7 @@ namespace algo {
             // Do post coefficient determination computation
             // This calculates residues and fitted values
             post_training_computation(training_data);
+            std::cout << "Total time :" << tim.elapsed() << std::endl;
         }
 
         void linearreg::train(utils::data::big_data &training_data, std::string label_colname) {
