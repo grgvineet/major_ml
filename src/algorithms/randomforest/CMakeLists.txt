@@ -3,11 +3,14 @@
 set(SOURCES
         randomforest.h
         randomforest.cpp
+        serialise_opencv_mat.h
+        serialise_opencv_mat.cpp
         )
 
 # add directory name to sources
 set(DIR_SRCS)
 foreach(file ${SOURCES})
+    set(BOOST_LIBRARYDIR ~/Documents/boost_1_61_0/libs/)
     set(DIR_SRCS ${DIR_SRCS} ${CMAKE_CURRENT_SOURCE_DIR}/${file})
 endforeach()
 
