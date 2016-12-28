@@ -1,7 +1,6 @@
 #ifndef ALGORITHMS_RANDOMFOREST_RANDOMFOREST_H
 #define ALGORITHMS_RANDOMFOREST_RANDOMFOREST_H
 
-#include "../algo_base.h"
 #include "serialise_opencv_mat.h"
 #include <hpx/hpx_init.hpp>
 #include <hpx/hpx.hpp>
@@ -44,15 +43,19 @@ namespace algo {
         struct test_data_struct
         {
         public:
-            cv::Mat samples;
-            std::uint64_t num_rows;
+            std::uint64_t train_rows, test_rows, num_attributes;
+            std::string training_file_path, testing_file_path;
 
-            test_data_struct()
+            test_data_struct(std::uint64_t train_rows, std::uint64_t test_rows,
+                             std::uint64_t num_attributes, std::string training_file_path, std::string testing_file_path):
+                    train_rows(train_rows),
+                    test_rows(test_rows),
+                    num_attributes(num_attributes),
+                    training_file_path(training_file_path),
+                    testing_file_path(testing_file_path)
             {}
 
-            test_data_struct(cv::Mat data, std::uint64_t num):
-                    samples(data),
-                    num_rows(num)
+            test_data_struct()
             {}
 
         private:
@@ -64,13 +67,13 @@ namespace algo {
             template <typename Archive>
             void serialize(Archive& ar, const unsigned int version)
             {
-                ar & samples & num_rows;
+                ar & train_rows & test_rows & num_attributes & training_file_path & testing_file_path;
             }
         };
 
-        struct randomforest : public algo_base {
+        struct randomforest{
         public:
-            randomforest(int seed = std::rand());
+            randomforest();
 
             ~randomforest();
 
@@ -92,7 +95,9 @@ namespace algo {
 
             void setParameters(int training_samples, int testing_samples, int attributes, int classes);
 
-            int train_and_predict(std::uint64_t np);
+            void setDataFilePaths(std::string test_file_path, std::string train_file_path);
+
+            int organise_computation(std::uint64_t np);
 
         private:
             int num_training_samples;
@@ -100,15 +105,16 @@ namespace algo {
             int num_testing_samples;
             int num_sample_classes;
             std::string testing_file_path, training_file_path;
+
         };
 
-        algo::randomforest::prediction_result_struct make_prediction(std::string filename, algo::randomforest::test_data_struct test_data, std::uint64_t num_samples, std::uint64_t num_attributes);
+        algo::randomforest::prediction_result_struct train_and_predict(algo::randomforest::test_data_struct test_data);
 
         void read_data_from_csv(std::string filename, cv::Mat data, cv::Mat classes, std::uint64_t num_samples, std::uint64_t num_attributes);
 
         std::size_t locidx(std::size_t i, std::size_t np, std::size_t nl);
 
-        HPX_DEFINE_PLAIN_ACTION(make_prediction, algo_randomforest_make_prediction_action);
+        HPX_DEFINE_PLAIN_ACTION(train_and_predict, train_and_predict_action);
     }
 }
 

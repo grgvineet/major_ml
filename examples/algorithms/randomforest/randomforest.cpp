@@ -7,11 +7,12 @@
 
 int hpx_main(boost::program_options::variables_map& vm)
 {
-    std::uint64_t no_localities = vm["nl"].as<std::uint64_t>();   // Number of partitions.
+    std::uint64_t no_partitions = vm["np"].as<std::uint64_t>();   // Number of partitions.
 
-    algo::randomforest::randomforest rf(3);
-    rf.setParameters(1125000, 500000, 18, 2);
-    rf.train_and_predict(no_localities);
+    algo::randomforest::randomforest rf;
+    rf.setParameters(1000, 100, 18, 2);
+    rf.setDataFilePaths("susy_test.csv", "susy_train.csv");
+    rf.organise_computation(no_partitions);
 
     return hpx::finalize();
 }
@@ -21,7 +22,7 @@ int main(int argc, char* argv[]) {
 
     options_description desc_commandline;
     desc_commandline.add_options()
-            ("nl", value<std::uint64_t>()->default_value(1), "Number of localities");
+            ("np", value<std::uint64_t>()->default_value(1), "Number of partitions");
 
     // Initialize and run HPX
     return hpx::init(desc_commandline, argc, argv);

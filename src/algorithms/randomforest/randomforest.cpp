@@ -7,13 +7,8 @@
 #include <boost/foreach.hpp>
 #include <hpx/include/thread_executors.hpp>
 
-HPX_REGISTER_ACTION(algo::randomforest::algo_randomforest_make_prediction_action, my_action);
-
-algo::randomforest::randomforest::randomforest(int seed) : algo::algo_base(seed)
-{
-    testing_file_path = "susy_test.csv";
-    training_file_path = "susy_train_";
-}
+algo::randomforest::randomforest::randomforest()
+{}
 
 algo::randomforest::randomforest::~randomforest()
 {}
@@ -58,64 +53,73 @@ void algo::randomforest::randomforest::setParameters(int training_samples, int t
     num_sample_classes = classes;
 }
 
+void algo::randomforest::randomforest::setDataFilePaths(std::string test_file_path, std::string train_file_path)
+{
+    testing_file_path = test_file_path;
+    training_file_path = train_file_path;
+}
 
-int algo::randomforest::randomforest::train_and_predict(std::uint64_t np) {
+int algo::randomforest::randomforest::organise_computation(std::uint64_t no_partitions) {
 
     std::vector<hpx::id_type> localities = hpx::find_all_localities();
     std::size_t nl = localities.size();                // Number of localities
 
-    if (np < nl)
+    if (no_partitions < nl)
     {
         std::cout << "The number of partitions should not be smaller than the number of localities" << std::endl;
         return hpx::finalize();
     }
 
-    // Measure execution time.
-    std::uint64_t t = hpx::util::high_resolution_clock::now();
+    std::vector<hpx::future<prediction_result_struct> >next(no_partitions);
 
-    std::vector<hpx::future<prediction_result_struct> >next(np);
-
-    std::cout << "Beginning execution" << std::endl;
     //define testing data storage matrices
     test_data_struct test_data;
-    cv::Mat testing_classifications;
+    test_data.test_rows = num_testing_samples;
+    test_data.train_rows = num_training_samples;
+    test_data.num_attributes = num_attributes_per_sample;
+    test_data.testing_file_path = testing_file_path;
+    test_data.training_file_path = training_file_path;
+
+    train_and_predict_action predict;
+    hpx::id_type temp = localities[0];
+    localities[0] = localities[no_partitions-1];
+    localities[no_partitions-1] = temp;
+
+    for (std::size_t i = 0; i != no_partitions; ++i)
+    {
+        next[i] = hpx::async(predict,
+                             localities[locidx(i, no_partitions, nl)],
+                             test_data);
+    }
+    int classifications[num_testing_samples+2][2] = {0};
+
+    hpx::wait_all(next);
+    for (std::size_t i = 0; i != no_partitions; ++i)
+    {
+        prediction_result_struct result = next[i].get();
+
+        for (int tsample = 0; tsample < num_testing_samples; tsample++)
+        {
+            if (fabs(result.classification_result.at<float>(tsample, 0) - 0.00) >= FLT_EPSILON)
+                classifications[tsample][1]++;
+            else
+                classifications[tsample][0]++;
+        }
+    }
+
     {
         using namespace cv;
 
         Mat testing_data = Mat(num_testing_samples, num_attributes_per_sample, CV_32FC1);
-        testing_classifications = Mat(num_testing_samples, 1, CV_32FC1);
+        Mat testing_classifications = Mat(num_testing_samples, 1, CV_32FC1);
 
-        algo::randomforest::read_data_from_csv(testing_file_path, testing_data, testing_classifications, num_testing_samples, num_attributes_per_sample);
-        test_data.samples = testing_data;
-        test_data.num_rows = num_testing_samples;
-    }
-
-    std::cout << "Test data loaded" << std::endl;
-    algo_randomforest_make_prediction_action predict;
-    for (std::size_t i = 0; i != np; ++i)
-    {
-        std::string filename = training_file_path + std::to_string(i+1) + ".csv";
-        next[i] = hpx::async(predict,
-                             localities[algo::randomforest::locidx(i, np, nl)],
-                             filename,
-                             test_data,
-                             num_training_samples,
-                             num_attributes_per_sample);
-    }
-    std::cout << "future created" << std::endl;
-
-    hpx::wait_all(next);
-    for (std::size_t i = 0; i != np; ++i)
-    {
-        algo::randomforest::prediction_result_struct result = next[i].get();
-
-        std::cout << "For locality" << i <<", results:" << std::endl;
+        read_data_from_csv(testing_file_path, testing_data, testing_classifications, num_testing_samples, num_attributes_per_sample);
         int correct_class = 0;
         int wrong_class = 0;
 
         for (int tsample = 0; tsample < num_testing_samples; tsample++)
         {
-            if (fabs(result.classification_result.at<float>(tsample, 0)
+            if (fabs((float)(classifications[tsample][1] >= classifications[tsample][0] ? 1 : 0)
                      - testing_classifications.at<float>(tsample, 0)) >= FLT_EPSILON)
             {
                 wrong_class++;
@@ -125,38 +129,29 @@ int algo::randomforest::randomforest::train_and_predict(std::uint64_t np) {
                 correct_class++;
             }
         }
-
         printf( "\tCorrect classification: %d (%g%%)\n\tWrong classifications: %d (%g%%)\n",
                 correct_class, (float) correct_class*100/num_testing_samples,
                 wrong_class, (float) wrong_class*100/num_testing_samples);
     }
 
-    std::uint64_t elapsed = hpx::util::high_resolution_clock::now() - t;
-    std::cout << "Elapsed time: " << elapsed << std::endl;
-
     return hpx::finalize();
-
 }
 
-algo::randomforest::prediction_result_struct algo::randomforest::make_prediction(std::string filename, algo::randomforest::test_data_struct test_data, std::uint64_t num_samples, std::uint64_t num_attributes)
+algo::randomforest::prediction_result_struct algo::randomforest::train_and_predict(algo::randomforest::test_data_struct test_data)
 {
-    std::cout << "This thread runs with a "
-            << hpx::threads::get_stack_size_name(
-                    hpx::this_thread::get_stack_size())
-            << " stack and "
-            << hpx::threads::get_thread_priority_name(
-                    hpx::this_thread::get_priority())
-            << " priority." << std::endl;
-
     using namespace cv;
-    Mat training_data =Mat(num_samples, num_attributes, CV_32FC1);
-    Mat training_classifications = Mat(num_samples, 1, CV_32FC1);
 
-    algo::randomforest::read_data_from_csv(filename, training_data, training_classifications, num_samples, num_attributes);
+    Mat testing_data = Mat(test_data.test_rows, test_data.num_attributes, CV_32FC1);
+    Mat testing_classifications = Mat(test_data.test_rows, 1, CV_32FC1);
+    read_data_from_csv(test_data.testing_file_path, testing_data, testing_classifications, test_data.test_rows, test_data.num_attributes);
 
-    Mat var_type = Mat(num_attributes + 1, 1, CV_8U );
+    Mat training_data =Mat(test_data.train_rows, test_data.num_attributes, CV_32FC1);
+    Mat training_classifications = Mat(test_data.train_rows, 1, CV_32FC1);
+    read_data_from_csv(test_data.training_file_path, training_data, training_classifications, test_data.train_rows, test_data.num_attributes);
+
+    Mat var_type = Mat(test_data.num_attributes + 1, 1, CV_8U );
     var_type.setTo(Scalar(CV_VAR_NUMERICAL) ); // all inputs are numerical
-    var_type.at<uchar>(num_attributes, 0) = CV_VAR_CATEGORICAL;
+    var_type.at<uchar>(test_data.num_attributes, 0) = CV_VAR_CATEGORICAL;
 
     float priors[] = {1,1,1,1,1,1,1,1,1,1};   // weights of each classification for classes
     CvRTParams params = CvRTParams(25, // max depth
@@ -174,13 +169,13 @@ algo::randomforest::prediction_result_struct algo::randomforest::make_prediction
     CvRTrees* rtree = new CvRTrees;
     rtree->train(training_data, CV_ROW_SAMPLE, training_classifications, Mat(), Mat(), var_type, Mat(), params);
 
-    Mat test_data_class = Mat(test_data.num_rows, 1, CV_32FC1);
-    for (int tsample = 0; tsample < test_data.num_rows; tsample++)
+    Mat test_data_class = Mat(test_data.test_rows, 1, CV_32FC1);
+    for (int tsample = 0; tsample < test_data.test_rows; tsample++)
     {
-        Mat test_sample = test_data.samples.row(tsample);
+        Mat test_sample = testing_data.row(tsample);
         test_data_class.at<float>(tsample, 0) = rtree->predict(test_sample, Mat());
     }
-    prediction_result_struct result(test_data_class, test_data.num_rows);
+    prediction_result_struct result(test_data_class, test_data.test_rows);
     return result;
 }
 
@@ -223,5 +218,8 @@ std::size_t  algo::randomforest::locidx(std::size_t i, std::size_t np, std::size
 {
     return i / (np/nl);
 }
+
+HPX_REGISTER_ACTION(algo::randomforest::train_and_predict_action, train_and_predict_action);
+
 
 
