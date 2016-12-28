@@ -5,6 +5,9 @@ set(SOURCES
         randomforest.cpp
         serialise_opencv_mat.h
         serialise_opencv_mat.cpp
+        data_structures.cpp
+        core_functions.h
+        core_functions.cpp
         )
 
 # add directory name to sources

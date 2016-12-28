@@ -7,12 +7,14 @@
 
 int hpx_main(boost::program_options::variables_map& vm)
 {
-    std::uint64_t no_partitions = vm["np"].as<std::uint64_t>();   // Number of partitions.
+    std::uint64_t num_partitions = vm["np"].as<std::uint64_t>();   // Number of partitions.
 
     algo::randomforest::randomforest rf;
+
+    // computation was performed on this dataset: https://archive.ics.uci.edu/ml/datasets/SUSY
     rf.setParameters(1000, 100, 18, 2);
     rf.setDataFilePaths("susy_test.csv", "susy_train.csv");
-    rf.organise_computation(no_partitions);
+    rf.organise_computation(num_partitions);
 
     return hpx::finalize();
 }
